@@ -71,6 +71,15 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by one_for_allParser#parameters_recursive.
+    def enterParameters_recursive(self, ctx:one_for_allParser.Parameters_recursiveContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#parameters_recursive.
+    def exitParameters_recursive(self, ctx:one_for_allParser.Parameters_recursiveContext):
+        pass
+
+
     # Enter a parse tree produced by one_for_allParser#variables.
     def enterVariables(self, ctx:one_for_allParser.VariablesContext):
         pass

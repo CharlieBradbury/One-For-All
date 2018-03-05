@@ -66,10 +66,13 @@ class_private:
     TOK_PRIVATE TOK_COLON TOK_LBRACE (variables)? (funcs)? TOK_RBRACE;
 
 funcs:
-    (TOK_FUNCTION data_type TOK_ID TOK_LPAREN parameters TOK_RPAREN block)+;
+    (TOK_FUNCTION data_type TOK_ID TOK_LPAREN (parameters)? TOK_RPAREN block)+;
 
 parameters:
-    (TOK_VAR data_type TOK_ID TOK_COMMA)*;
+    TOK_VAR data_type TOK_ID parameters_recursive;
+
+parameters_recursive:
+    (TOK_COMMA  TOK_VAR data_type TOK_ID)*;
 
 variables:
     (TOK_VAR data_type TOK_ID other_var TOK_SEMICOLON)+;
