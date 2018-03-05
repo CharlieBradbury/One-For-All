@@ -1,0 +1,48 @@
+program test01;
+class salute {
+    public: {
+        var string hello;
+        function string sayHello() {
+            write("hello");
+        }
+    }
+    
+    private: {}
+}
+
+class farewell {
+    public: {
+    }
+    
+    private: {
+        var string bye;
+        function string sayGoodbye() {
+            write(bye);
+        }
+    }
+}
+
+var int barbara;
+var farewell obj;
+
+function string sayHello() {
+        write("hello");
+    }
+
+main {
+    obj[i + 1] = obj[i] * obj.atributo + obj.metodo(2) + i * fact(i);
+    if( barbara[2] > 3 && 5 - 2 > 4){
+    write("hola");
+    }
+
+    if(10 != 2){
+        write(barbara[2]);
+    }
+
+    if(hello != bye){
+        write("different");
+    }
+    else {
+    hola = (2 * 3 + (2 - 3)) - 3.5;
+    }
+}
