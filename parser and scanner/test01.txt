@@ -1,4 +1,5 @@
 program test01;
+
 class salute {
     public: {
         var string hello;
@@ -8,9 +9,9 @@ class salute {
     }
     
     private: {}
-}
 
-class farewell {
+}
+class farewell : hola {
     public: {
     }
     
@@ -22,7 +23,7 @@ class farewell {
     }
 }
 
-var int barbara, say, hello ;
+var int barbara, say, hello;
 var farewell obj;
 
 function string sayHello(var string hola, var string hello) {
