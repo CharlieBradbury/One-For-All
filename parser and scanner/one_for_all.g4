@@ -54,16 +54,16 @@ programa:
 	TOK_PROGRAM TOK_ID TOK_SEMICOLON (classes)? (variables)? (funcs)? main;
 
 classes:
-    (TOK_CLASS TOK_ID inheritance TOK_LBRACE class_public class_private TOK_RBRACE)+;
+    (TOK_CLASS TOK_ID inheritance TOK_LBRACE (class_public)? (class_private)?TOK_RBRACE)+;
 
 inheritance:
     (TOK_COLON TOK_ID)?;
 
 class_public:
-    TOK_PUBLIC TOK_COLON TOK_LBRACE (variables)? (funcs)? TOK_RBRACE;
+    (TOK_PUBLIC variables| TOK_PUBLIC funcs)+;
 
 class_private:
-    TOK_PRIVATE TOK_COLON TOK_LBRACE (variables)? (funcs)? TOK_RBRACE;
+     (TOK_PRIVATE variables| TOK_PRIVATE funcs)+;
 
 funcs:
     (TOK_FUNCTION data_type TOK_ID TOK_LPAREN (parameters)? TOK_RPAREN block)+;

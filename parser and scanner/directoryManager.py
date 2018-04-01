@@ -10,7 +10,6 @@ class directoryManager():
         self.dictFunctions = {}
 
     def addClassToDirectory(self, objClass):
-        print("Create class")
         self.dictClasses.update({objClass.name : objClass})
     
     def addGlobalsToDirectory(self, objVariable):
