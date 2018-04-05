@@ -19,12 +19,10 @@ class ruleManager(one_for_allListener):
 		self.isPublic = True
 
 	def enterClasses(self, ctx):
-		print("hola")
-		self.currentClass = ctx.TOK_ID(0).getText()
-		print(self.currentClass)
-		for val in ctx.TOK_ID():
-			lst = [val, None,None]
-			self.classes.append(lst)
+		try:
+			self.currentClass = ctx.TOK_ID().getText()
+		except:
+			pass
 
 	def enterInheritance(self, ctx):
 		try:
@@ -101,7 +99,6 @@ class ruleManager(one_for_allListener):
 
 		counter_func = 0
 		counter_params = 0
-		print(self.currentClass)
 		try:
 			while ctx.parameters(counter_func).parameters_recursive() is not None:
 				param_type = ctx.parameters(counter_func).parameters_recursive().data_type(counter_params).getText()

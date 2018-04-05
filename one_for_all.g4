@@ -51,10 +51,10 @@ ESPACIOS : [ \n\t\r] -> skip;
 
 
 programa: 
-	TOK_PROGRAM TOK_ID TOK_SEMICOLON (classes)? (variables)? (funcs)? main;
+	TOK_PROGRAM TOK_ID TOK_SEMICOLON classes (variables)? (funcs)? main;
 
 classes:
-    (TOK_CLASS TOK_ID inheritance TOK_LBRACE (class_public)? (class_private)? TOK_RBRACE)+;
+    TOK_CLASS TOK_ID inheritance TOK_LBRACE (class_public)? (class_private)? TOK_RBRACE classes |;
 
 inheritance:
     (TOK_COLON TOK_ID)?;
