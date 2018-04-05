@@ -8,6 +8,7 @@ class salute {
             write("hello");
         }
 }
+
 class farewell : hola {
     public var int numero;
     private var string bye;

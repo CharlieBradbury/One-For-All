@@ -25,7 +25,7 @@ class objVariable_Class():
 
 #Mehods for a class    
 #params is a list of variables object 
-class objMethods_Class():
+class objMethods():
     def __init__(self, id, name, params, data_type, isPublic):
         self.id = id
         self.name = name
