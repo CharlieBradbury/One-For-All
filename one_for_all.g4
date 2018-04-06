@@ -51,94 +51,103 @@ ESPACIOS : [ \n\t\r] -> skip;
 
 
 programa: 
-	TOK_PROGRAM TOK_ID TOK_SEMICOLON (classes)? (variables)? (funcs)? main;
+	TOK_PROGRAM TOK_ID TOK_SEMICOLON classes (variables)? (routines)? restOfProgram;
+
+restOfProgram:
+    main;
 
 classes:
-	(TOK_CLASS TOK_ID inheritance TOK_LBRACE (class_public)? (class_private)?TOK_RBRACE)+;
+    (classDefinition)+;
+
+classDefinition:
+	TOK_CLASS TOK_ID inheritance TOK_LBRACE (class_public)? (class_private)? TOK_RBRACE;
 
 inheritance:
-	(TOK_COLON TOK_ID)?;
+    (TOK_COLON TOK_ID)?;
 
 class_public:
-	(TOK_PUBLIC variables| TOK_PUBLIC funcs)+;
+    (TOK_PUBLIC variables| TOK_PUBLIC routines)+;
 
 class_private:
-	 (TOK_PRIVATE variables| TOK_PRIVATE funcs)+;
+     (TOK_PRIVATE variables| TOK_PRIVATE routines)+;
 
-funcs:
-	(TOK_FUNCTION data_type TOK_ID TOK_LPAREN (parameters)? TOK_RPAREN block)+;
+routines:
+    (routineDefinition)+;
+
+routineDefinition:
+    TOK_FUNCTION data_type TOK_ID TOK_LPAREN (parameters)? TOK_RPAREN block;
 
 parameters:
-	TOK_VAR data_type TOK_ID parameters_recursive;
+    TOK_VAR data_type TOK_ID parameters_recursive;
 
 parameters_recursive:
-	(TOK_COMMA  TOK_VAR data_type TOK_ID)*;
+    (TOK_COMMA  TOK_VAR data_type TOK_ID)*;
 
 variables:
-	(TOK_VAR data_type TOK_ID other_var TOK_SEMICOLON)+;
+    (variableDefinition)+;
 
-other_var:
-	(TOK_COMMA TOK_ID)*;
+variableDefinition:
+	TOK_VAR data_type TOK_ID (TOK_COMMA TOK_ID)* TOK_SEMICOLON;
 
 data_type:
-	(TOK_INT | TOK_FLOAT | TOK_STRING | TOK_BOOLEAN | TOK_ID);
+    (TOK_INT | TOK_FLOAT | TOK_STRING | TOK_BOOLEAN | TOK_ID);
 
 main:
-	TOK_MAIN block;
+    TOK_MAIN block;
 
 block:
-	TOK_LBRACE statute TOK_RBRACE;
+    TOK_LBRACE statute TOK_RBRACE;
 
 statute:
-	(assignment | condition | loop | output | input_ | variables)*;
+    (assignment | condition | loop | output | input_ | variables)*;
 
 assignment:
-	id_ TOK_EQUAL expr TOK_SEMICOLON statute;
+    id_ TOK_EQUAL expr TOK_SEMICOLON statute;
 
 condition:
-	TOK_IF TOK_LPAREN expr TOK_RPAREN block conditionelse statute;
+    TOK_IF TOK_LPAREN expr TOK_RPAREN block conditionelse statute;
 
 loop:
-	TOK_WHILE TOK_LPAREN expr TOK_RPAREN block statute;
+    TOK_WHILE TOK_LPAREN expr TOK_RPAREN block statute;
 
 input_:
-	TOK_READ TOK_LPAREN STRING TOK_COMMA TOK_ID TOK_RPAREN TOK_SEMICOLON statute;
+    TOK_READ TOK_LPAREN STRING TOK_COMMA TOK_ID TOK_RPAREN TOK_SEMICOLON statute;
 
 output:
-	TOK_WRITE TOK_LPAREN output_aux  TOK_RPAREN TOK_SEMICOLON statute;
+    TOK_WRITE TOK_LPAREN output_aux  TOK_RPAREN TOK_SEMICOLON statute;
 
 output_aux:
-	(expr | STRING | escrituraaux);
+    (expr | STRING | escrituraaux);
 
 escrituraaux: 
 	(TOK_COMMA output_aux)*; 
 
 conditionelse:
-	(TOK_ELSE block)?;
+    (TOK_ELSE block)?;
 
 expr: 
-	(relational_expr expr_aux)+;
+    (relational_expr expr_aux)+;
 
 expr_aux:
-	(TOK_AND | TOK_OR)*;
+    (TOK_AND | TOK_OR)*;
 
 relational_expr:
-	sumMinus_expr (TOK_SAME | TOK_GREATER | TOK_GREATER_EQ | TOK_LESS | TOK_LESS_EQ | TOK_DIFFERENT)*;
+    sumMinus_expr (TOK_SAME | TOK_GREATER | TOK_GREATER_EQ | TOK_LESS | TOK_LESS_EQ | TOK_DIFFERENT)*;
 
 sumMinus_expr:
-	(multiDiv_expr expr_aux2)+;
+    (multiDiv_expr expr_aux2)+;
 
 expr_aux2:
-	(TOK_PLUS | TOK_MINUS)*;
+    (TOK_PLUS | TOK_MINUS)*;
 
 multiDiv_expr:
-	(factor expr_aux3)+;
+    (factor expr_aux3)+;
 
 expr_aux3:
-	(TOK_MULTIPLICATION | TOK_DIVISION)*;
+    (TOK_MULTIPLICATION | TOK_DIVISION)*;
 
 factor:
-	((TOK_LPAREN expr TOK_RPAREN) | TOK_ID | constant);
+    ((TOK_LPAREN expr TOK_RPAREN) | TOK_ID | constant);
 
 constant: (id_ | FLOAT | INT | STRING | BOOLEAN);
 
