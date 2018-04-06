@@ -51,22 +51,31 @@ ESPACIOS : [ \n\t\r] -> skip;
 
 
 programa: 
-	TOK_PROGRAM TOK_ID TOK_SEMICOLON classes (variables)? (funcs)? main;
+	TOK_PROGRAM TOK_ID TOK_SEMICOLON classes (variables)? (routines)? restOfProgram;
+
+restOfProgram:
+    main;
 
 classes:
-    TOK_CLASS TOK_ID inheritance TOK_LBRACE (class_public)? (class_private)? TOK_RBRACE classes |;
+    (classDefinition)+;
+
+classDefinition:
+	TOK_CLASS TOK_ID inheritance TOK_LBRACE (class_public)? (class_private)? TOK_RBRACE;
 
 inheritance:
     (TOK_COLON TOK_ID)?;
 
 class_public:
-    (TOK_PUBLIC variables| TOK_PUBLIC funcs)+;
+    (TOK_PUBLIC variables| TOK_PUBLIC routines)+;
 
 class_private:
-     (TOK_PRIVATE variables| TOK_PRIVATE funcs)+;
+     (TOK_PRIVATE variables| TOK_PRIVATE routines)+;
 
-funcs:
-    (TOK_FUNCTION data_type TOK_ID TOK_LPAREN (parameters)? TOK_RPAREN block)+;
+routines:
+    (routineDefinition)+;
+
+routineDefinition:
+    TOK_FUNCTION data_type TOK_ID TOK_LPAREN (parameters)? TOK_RPAREN block;
 
 parameters:
     TOK_VAR data_type TOK_ID parameters_recursive;
@@ -75,10 +84,10 @@ parameters_recursive:
     (TOK_COMMA  TOK_VAR data_type TOK_ID)*;
 
 variables:
-    (TOK_VAR data_type TOK_ID other_var TOK_SEMICOLON)+;
+    (variableDefinition)+;
 
-other_var:
-    (TOK_COMMA TOK_ID)*;
+variableDefinition:
+	TOK_VAR data_type TOK_ID (TOK_COMMA TOK_ID)* TOK_SEMICOLON;
 
 data_type:
     (TOK_INT | TOK_FLOAT | TOK_STRING | TOK_BOOLEAN | TOK_ID);

@@ -16,7 +16,14 @@ class one_for_allListener(ParseTreeListener):
     def exitPrograma(self, ctx:one_for_allParser.ProgramaContext):
         pass
 
+    # Enter a parse tree produced by one_for_allParser#restOfProgram.
+    def enterRestOfProgram(self, ctx:one_for_allParser.RestOfProgramContext):
+        pass
 
+    # Exit a parse tree produced by one_for_allParser#restOfProgram.
+    def exitRestOfProgram(self, ctx:one_for_allParser.RestOfProgramContext):
+        pass
+      
     # Enter a parse tree produced by one_for_allParser#classes.
     def enterClasses(self, ctx:one_for_allParser.ClassesContext):
         pass
@@ -25,6 +32,13 @@ class one_for_allListener(ParseTreeListener):
     def exitClasses(self, ctx:one_for_allParser.ClassesContext):
         pass
 
+    # Enter a parse tree produced by one_for_allParser#classDefinition.
+    def enterClassDefinition(self, ctx:one_for_allParser.ClassDefinitionContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#classDefinition.
+    def exitClassDefinition(self, ctx:one_for_allParser.ClassDefinitionContext):
+        pass
 
     # Enter a parse tree produced by one_for_allParser#inheritance.
     def enterInheritance(self, ctx:one_for_allParser.InheritanceContext):
@@ -53,12 +67,22 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by one_for_allParser#funcs.
-    def enterFuncs(self, ctx:one_for_allParser.FuncsContext):
+
+    # Enter a parse tree produced by one_for_allParser#routines.
+    def enterRoutines(self, ctx:one_for_allParser.RoutinesContext):
         pass
 
-    # Exit a parse tree produced by one_for_allParser#funcs.
-    def exitFuncs(self, ctx:one_for_allParser.FuncsContext):
+    # Exit a parse tree produced by one_for_allParser#routines.
+    def exitRoutines(self, ctx:one_for_allParser.RoutinesContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#routineDefinition.
+    def enterRoutineDefinition(self, ctx:one_for_allParser.RoutineDefinitionContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#routineDefinition.
+    def exitRoutineDefinition(self, ctx:one_for_allParser.RoutineDefinitionContext):
         pass
 
 
@@ -89,12 +113,12 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by one_for_allParser#other_var.
-    def enterOther_var(self, ctx:one_for_allParser.Other_varContext):
+    # Enter a parse tree produced by one_for_allParser#variableDefinition.
+    def enterVariableDefinition(self, ctx:one_for_allParser.VariableDefinitionContext):
         pass
 
-    # Exit a parse tree produced by one_for_allParser#other_var.
-    def exitOther_var(self, ctx:one_for_allParser.Other_varContext):
+    # Exit a parse tree produced by one_for_allParser#variableDefinition.
+    def exitVariableDefinition(self, ctx:one_for_allParser.VariableDefinitionContext):
         pass
 
 
