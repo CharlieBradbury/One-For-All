@@ -9,7 +9,6 @@ from objClass import objVariable_Class
 from objClass import objMethod
 from objFunction import objFunction
 from objVariable import objVariable
-
 from collections import OrderedDict
 
 class ruleManager(one_for_allListener):
