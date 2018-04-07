@@ -308,7 +308,6 @@ class one_for_allParser ( Parser ):
             return self.getTypedRuleContext(one_for_allParser.ClassesContext,0)
 
 
-OFA_David
         def restOfProgram(self):
             return self.getTypedRuleContext(one_for_allParser.RestOfProgramContext,0)
 
@@ -317,9 +316,9 @@ OFA_David
             return self.getTypedRuleContext(one_for_allParser.VariablesContext,0)
 
 
-OFA_David
         def routines(self):
             return self.getTypedRuleContext(one_for_allParser.RoutinesContext,0)
+
 
         def getRuleIndex(self):
             return one_for_allParser.RULE_programa
@@ -475,7 +474,7 @@ OFA_David
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
-            
+
         def TOK_CLASS(self):
             return self.getToken(one_for_allParser.TOK_CLASS, 0)
 
@@ -510,6 +509,10 @@ OFA_David
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitClassDefinition" ):
                 listener.exitClassDefinition(self)
+
+
+
+
     def classDefinition(self):
 
         localctx = one_for_allParser.ClassDefinitionContext(self, self._ctx, self.state)
@@ -660,21 +663,6 @@ OFA_David
                     self.state = 105
                     self.match(one_for_allParser.TOK_PUBLIC)
                     self.state = 106
-        self.enterRule(localctx, 6, self.RULE_class_public)
-        self._la = 0 # Token type
-        try:
-            self.enterOuterAlt(localctx, 1)
-            self.state = 100 
-            self._errHandler.sync(self)
-            _la = self._input.LA(1)
-            while True:
-                self.state = 100
-                self._errHandler.sync(self)
-                la_ = self._interp.adaptivePredict(self._input,6,self._ctx)
-                if la_ == 1:
-                    self.state = 96
-                    self.match(one_for_allParser.TOK_PUBLIC)
-                    self.state = 97
                     self.variables()
                     pass
 
@@ -877,6 +865,10 @@ OFA_David
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitRoutineDefinition" ):
                 listener.exitRoutineDefinition(self)
+
+
+
+
     def routineDefinition(self):
 
         localctx = one_for_allParser.RoutineDefinitionContext(self, self._ctx, self.state)
@@ -1056,6 +1048,7 @@ OFA_David
             else:
                 return self.getTypedRuleContext(one_for_allParser.VariableDefinitionContext,i)
 
+
         def getRuleIndex(self):
             return one_for_allParser.RULE_variables
 
@@ -1110,6 +1103,7 @@ OFA_David
         def data_type(self):
             return self.getTypedRuleContext(one_for_allParser.Data_typeContext,0)
 
+
         def TOK_ID(self, i:int=None):
             if i is None:
                 return self.getTokens(one_for_allParser.TOK_ID)
@@ -1135,6 +1129,9 @@ OFA_David
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitVariableDefinition" ):
                 listener.exitVariableDefinition(self)
+
+
+
 
     def variableDefinition(self):
 
@@ -1827,10 +1824,12 @@ OFA_David
                 pass
 
             elif la_ == 2:
+                self.state = 226
                 self.match(one_for_allParser.STRING)
                 pass
 
             elif la_ == 3:
+                self.state = 227
                 self.escrituraaux()
                 pass
 
@@ -1887,6 +1886,11 @@ OFA_David
             _alt = self._interp.adaptivePredict(self._input,18,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
+                    self.state = 230
+                    self.match(one_for_allParser.TOK_COMMA)
+                    self.state = 231
+                    self.output_aux() 
+                self.state = 236
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,18,self._ctx)
 
@@ -2063,6 +2067,7 @@ OFA_David
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
+                self.state = 253
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -2154,6 +2159,7 @@ OFA_David
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
+                self.state = 260
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -2202,14 +2208,22 @@ OFA_David
     def sumMinus_expr(self):
 
         localctx = one_for_allParser.SumMinus_exprContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 56, self.RULE_sumMinus_expr)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 264 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
+                    self.state = 261
+                    self.multiDiv_expr()
+                    self.state = 262
                     self.expr_aux2()
 
                 else:
                     raise NoViableAltException(self)
+                self.state = 266 
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,23,self._ctx)
 
@@ -2271,6 +2285,7 @@ OFA_David
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
+                self.state = 273
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -2464,10 +2479,12 @@ OFA_David
                 pass
 
             elif la_ == 2:
+                self.state = 291
                 self.match(one_for_allParser.TOK_ID)
                 pass
 
             elif la_ == 3:
+                self.state = 292
                 self.constant()
                 pass
 

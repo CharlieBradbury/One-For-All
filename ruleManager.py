@@ -1,12 +1,10 @@
 import sys
 from antlr4 import *
-from one_for_allLexer import one_for_allLexer
-from one_for_allParser import one_for_allParser
-from one_for_allListener import one_for_allListener
+from parser.one_for_allLexer import one_for_allLexer
+from parser.one_for_allParser import one_for_allParser
+from parser.one_for_allListener import one_for_allListener
 from directoryManager import directoryManager
-from objClass import objClass
-from objClass import objVariable_Class
-from objClass import objMethod
+from objClass import *
 from objFunction import objFunction
 from objVariable import objVariable
 from collections import OrderedDict

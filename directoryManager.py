@@ -1,7 +1,7 @@
 import sys
 from antlr4 import *
-from one_for_allLexer import one_for_allLexer
-from one_for_allParser import one_for_allParser
+from parser.one_for_allLexer import one_for_allLexer
+from parser.one_for_allParser import one_for_allParser
 
 class directoryManager():
     def __init__(self):

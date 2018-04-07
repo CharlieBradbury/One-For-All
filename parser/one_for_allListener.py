@@ -16,6 +16,7 @@ class one_for_allListener(ParseTreeListener):
     def exitPrograma(self, ctx:one_for_allParser.ProgramaContext):
         pass
 
+
     # Enter a parse tree produced by one_for_allParser#restOfProgram.
     def enterRestOfProgram(self, ctx:one_for_allParser.RestOfProgramContext):
         pass
@@ -23,7 +24,8 @@ class one_for_allListener(ParseTreeListener):
     # Exit a parse tree produced by one_for_allParser#restOfProgram.
     def exitRestOfProgram(self, ctx:one_for_allParser.RestOfProgramContext):
         pass
-      
+
+
     # Enter a parse tree produced by one_for_allParser#classes.
     def enterClasses(self, ctx:one_for_allParser.ClassesContext):
         pass
@@ -32,6 +34,7 @@ class one_for_allListener(ParseTreeListener):
     def exitClasses(self, ctx:one_for_allParser.ClassesContext):
         pass
 
+
     # Enter a parse tree produced by one_for_allParser#classDefinition.
     def enterClassDefinition(self, ctx:one_for_allParser.ClassDefinitionContext):
         pass
@@ -39,6 +42,7 @@ class one_for_allListener(ParseTreeListener):
     # Exit a parse tree produced by one_for_allParser#classDefinition.
     def exitClassDefinition(self, ctx:one_for_allParser.ClassDefinitionContext):
         pass
+
 
     # Enter a parse tree produced by one_for_allParser#inheritance.
     def enterInheritance(self, ctx:one_for_allParser.InheritanceContext):
@@ -65,7 +69,6 @@ class one_for_allListener(ParseTreeListener):
     # Exit a parse tree produced by one_for_allParser#class_private.
     def exitClass_private(self, ctx:one_for_allParser.Class_privateContext):
         pass
-
 
 
     # Enter a parse tree produced by one_for_allParser#routines.
