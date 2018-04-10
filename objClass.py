@@ -52,7 +52,7 @@ class objClass():
 			for key, priMethod in self.privateMethods.items():
 				priMethod.printMethod()
 
-			print("")
+			print("----------------------")
 		except:
 			print("Error while printing information of class")
 

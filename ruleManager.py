@@ -8,6 +8,7 @@ from objClass import *
 from objFunction import objFunction
 from objVariable import objVariable
 from collections import OrderedDict
+from quadruples import *
 
 class ruleManager(one_for_allListener):
 	def __init__(self):
@@ -32,6 +33,12 @@ class ruleManager(one_for_allListener):
 		# and if the current var/method is public
 		self.isPartOfClass = False
 		self.isPublic = False
+
+		#Stack of tuples with operator and its type
+		#first element is the type, the second element is the id
+		self.StackOperators = []
+		#Stack of operations 
+		self.StackOperations = []
 
 	def enterClasses(self, ctx):
 		self.isPartOfClass = True
@@ -219,3 +226,58 @@ class ruleManager(one_for_allListener):
 
 	def addFinishedClass(self, objClass):
 		self.classDirectory[objClass.name] = objClass
+	
+
+	#------------------------------------------------------
+	# GENERACION DE CUADRUPLOS
+	#------------------------------------------------------
+
+	# Enter a parse tree produced by one_for_allParser#rulesum.
+	def enterRulesum(self, ctx):
+		self.StackOperators.append(ctx.getText())
+	
+	# Enter a parse tree produced by one_for_allParser#ruleminus.
+	def enterRuleminus(self, ctx):
+		self.StackOperators.append(ctx.getText())
+	
+	 # Enter a parse tree produced by one_for_allParser#rulemultiply.
+	def enterRulemultiply(self, ctx):
+		self.StackOperators.append(ctx.getText())
+
+	# Enter a parse tree produced by one_for_allParser#ruledivide.
+	def enterRuledivide(self, ctx):
+		self.StackOperators.append(ctx.getText())
+
+	# Enter a parse tree produced by one_for_allParser#id_.
+	def enterId_(self, ctx):
+		lst = ctx.TOK_ID()
+		#M = [x for x in S if x % 2 == 0]
+		print(lst[0].getText())
+		try:
+			print(lst[1].getText())
+		except:
+			pass
+		#print(lst[1].getText())
+		#print(lst[x].getText() for x in len(lst))
+
+	# Enter a parse tree produced by one_for_allParser#getId.
+	def enterGetId(self, ctx:one_for_allParser.GetIdContext):
+		pass
+
+	def enterRegla4(self, ctx):
+		if self.StackOperators:
+			try:
+				if self.StackOperators[-1] is '+':
+					self.StackOperators.pop()
+					right = tuple(self.StackOperations[-1][0], self.StackOperations[-1][1])
+					self.StackOperations.pop()
+					left = tuple(self.StackOperations[-1][0], self.StackOperations[-1][1])
+					self.StackOperations.pop()
+					result = 0
+					lst = [right, left]
+					#validate with the semantic cube if operation is possible
+					quad = quadruples(1,lst, result) 
+					print("AHHAHAHAHAHHAHAHAHAHAH")
+					print(quad)
+			except:
+				pass

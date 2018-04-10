@@ -251,6 +251,24 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by one_for_allParser#ruleand.
+    def enterRuleand(self, ctx:one_for_allParser.RuleandContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#ruleand.
+    def exitRuleand(self, ctx:one_for_allParser.RuleandContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#ruleor.
+    def enterRuleor(self, ctx:one_for_allParser.RuleorContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#ruleor.
+    def exitRuleor(self, ctx:one_for_allParser.RuleorContext):
+        pass
+
+
     # Enter a parse tree produced by one_for_allParser#relational_expr.
     def enterRelational_expr(self, ctx:one_for_allParser.Relational_exprContext):
         pass
@@ -278,6 +296,24 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by one_for_allParser#rulesum.
+    def enterRulesum(self, ctx:one_for_allParser.RulesumContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#rulesum.
+    def exitRulesum(self, ctx:one_for_allParser.RulesumContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#ruleminus.
+    def enterRuleminus(self, ctx:one_for_allParser.RuleminusContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#ruleminus.
+    def exitRuleminus(self, ctx:one_for_allParser.RuleminusContext):
+        pass
+
+
     # Enter a parse tree produced by one_for_allParser#multiDiv_expr.
     def enterMultiDiv_expr(self, ctx:one_for_allParser.MultiDiv_exprContext):
         pass
@@ -293,6 +329,24 @@ class one_for_allListener(ParseTreeListener):
 
     # Exit a parse tree produced by one_for_allParser#expr_aux3.
     def exitExpr_aux3(self, ctx:one_for_allParser.Expr_aux3Context):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#rulemultiply.
+    def enterRulemultiply(self, ctx:one_for_allParser.RulemultiplyContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#rulemultiply.
+    def exitRulemultiply(self, ctx:one_for_allParser.RulemultiplyContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#ruledivide.
+    def enterRuledivide(self, ctx:one_for_allParser.RuledivideContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#ruledivide.
+    def exitRuledivide(self, ctx:one_for_allParser.RuledivideContext):
         pass
 
 
@@ -320,6 +374,24 @@ class one_for_allListener(ParseTreeListener):
 
     # Exit a parse tree produced by one_for_allParser#id_.
     def exitId_(self, ctx:one_for_allParser.Id_Context):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#getId.
+    def enterGetId(self, ctx:one_for_allParser.GetIdContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#getId.
+    def exitGetId(self, ctx:one_for_allParser.GetIdContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#regla4.
+    def enterRegla4(self, ctx:one_for_allParser.Regla4Context):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#regla4.
+    def exitRegla4(self, ctx:one_for_allParser.Regla4Context):
         pass
 
 

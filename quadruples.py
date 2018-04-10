@@ -16,6 +16,6 @@
 
 class quadruples():
     def __init__(self, id, param, result):
-        self.id = id  #
-        self.param = param  #lista de parametros 
+        self.id = id 
+        self.param = param  
         self.result = result

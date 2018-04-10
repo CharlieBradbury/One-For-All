@@ -12,7 +12,7 @@ class farewell : hola {
 	public var int numero;
 	private var string bye;
 	private function string sayGoodbye(var string pivote, var int jaja) {
-			write(bye);
+			write(perro);
 		}
 }
 

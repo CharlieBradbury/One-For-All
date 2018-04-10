@@ -105,16 +105,17 @@ assignment:
     id_ TOK_EQUAL expr TOK_SEMICOLON statute;
 
 condition:
-    TOK_IF TOK_LPAREN expr TOK_RPAREN block conditionelse statute;
+    TOK_IF TOK_LPAREN expr TOK_RPAREN  block (conditionelse)?;
 
 loop:
-    TOK_WHILE TOK_LPAREN expr TOK_RPAREN block statute;
+    TOK_WHILE  TOK_LPAREN expr TOK_RPAREN block;
+
 
 input_:
     TOK_READ TOK_LPAREN STRING TOK_COMMA TOK_ID TOK_RPAREN TOK_SEMICOLON statute;
 
 output:
-    TOK_WRITE TOK_LPAREN output_aux  TOK_RPAREN TOK_SEMICOLON statute;
+    TOK_WRITE TOK_LPAREN output_aux TOK_RPAREN TOK_SEMICOLON statute;
 
 output_aux:
     (expr | STRING | escrituraaux);
@@ -123,33 +124,57 @@ escrituraaux:
 	(TOK_COMMA output_aux)*; 
 
 conditionelse:
-    (TOK_ELSE block)?;
+    TOK_ELSE block;
 
 expr: 
     (relational_expr expr_aux)+;
 
 expr_aux:
-    (TOK_AND | TOK_OR)*;
+    (ruleand | ruleor)*;
+
+ruleand:
+    TOK_AND;
+
+ruleor:
+    TOK_OR;
 
 relational_expr:
     sumMinus_expr (TOK_SAME | TOK_GREATER | TOK_GREATER_EQ | TOK_LESS | TOK_LESS_EQ | TOK_DIFFERENT)*;
 
 sumMinus_expr:
-    (multiDiv_expr expr_aux2)+;
+    (multiDiv_expr regla4 expr_aux2)+;
 
 expr_aux2:
-    (TOK_PLUS | TOK_MINUS)*;
+    (rulesum | ruleminus)*;
+
+rulesum:
+    TOK_PLUS;
+
+ruleminus:
+    TOK_MINUS;
 
 multiDiv_expr:
     (factor expr_aux3)+;
 
 expr_aux3:
-    (TOK_MULTIPLICATION | TOK_DIVISION)*;
+    (rulemultiply | ruledivide)*;
+
+rulemultiply:
+    TOK_MULTIPLICATION;
+
+ruledivide:
+    TOK_DIVISION;
 
 factor:
-    ((TOK_LPAREN expr TOK_RPAREN) | TOK_ID | constant);
+    ((TOK_LPAREN expr TOK_RPAREN) | constant);
 
 constant: (id_ | FLOAT | INT | STRING | BOOLEAN);
 
 id_:
-   TOK_ID (TOK_DOT TOK_ID (TOK_LPAREN expr TOK_RPAREN)? | TOK_LPAREN expr TOK_RPAREN | TOK_LBRACKET expr TOK_RBRACKET )*;
+   TOK_ID getId (TOK_DOT TOK_ID (TOK_LPAREN expr TOK_RPAREN)? | TOK_LPAREN expr TOK_RPAREN | TOK_LBRACKET expr TOK_RBRACKET )*;
+
+getId:
+;
+
+regla4:
+;
