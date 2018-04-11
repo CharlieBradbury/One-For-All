@@ -11,7 +11,6 @@ from objVariable import objVariable
 from collections import OrderedDict
 from semanticCube import semanticCube
 from quadruples import quadruples
-
 class ruleManager(one_for_allListener):
 
 	#------------------------------------------------------

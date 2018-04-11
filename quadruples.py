@@ -19,4 +19,3 @@ class quadruples():
         self.opt = opt
         self.opd1 = opd1
         self.opd2 = opd2
-        self.result = result
