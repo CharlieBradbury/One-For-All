@@ -15,7 +15,7 @@
 # GREATER_THAN = 12
 
 class quadruples():
-    def __init__(self, id, param, result):
-        self.id = id 
-        self.param = param  
-        self.result = result
+    def __init__(self, opt, opd1, opd2, result):
+        self.opt = opt
+        self.opd1 = opd1
+        self.opd2 = opd2

@@ -1,21 +1,33 @@
 import sys
 from antlr4 import *
-from parser.one_for_allLexer import one_for_allLexer
-from parser.one_for_allParser import one_for_allParser
-from parser.one_for_allListener import one_for_allListener
-from directoryManager import directoryManager
+sys.path.append('C:\\Users\\dadel\\Desktop\\One-For-All\\parser')
+from one_for_allLexer import one_for_allLexer
+from one_for_allParser import one_for_allParser
+from one_for_allListener import one_for_allListener
+from scopeManager import scopeManager
 from objClass import *
 from objFunction import objFunction
 from objVariable import objVariable
 from collections import OrderedDict
-from quadruples import *
-
+from semanticCube import semanticCube
+from quadruples import quadruples
 class ruleManager(one_for_allListener):
+
+	#------------------------------------------------------
+	# 	RULE MANAGER INITIALIZATION
+	#------------------------------------------------------
 	def __init__(self):
-		self.directory = directoryManager()
+
+		#------------------------------------------------------
+		# 	INITIALIZATION - MEMORY DIRECTIONS
+		#------------------------------------------------------
 
 		# Starting IDCounter at 0
 		self.IDCounter = 0
+
+		#------------------------------------------------------
+		# 	INITIALIZATION - CLASS, FUNCTIONS AND VARIABLES
+		#------------------------------------------------------
 
 		# Class Directory
 		self.classDirectory = dict()
@@ -34,16 +46,27 @@ class ruleManager(one_for_allListener):
 		self.isPartOfClass = False
 		self.isPublic = False
 
-		#Stack of tuples with operator and its type
-		#first element is the type, the second element is the id
-		self.StackOperators = []
-		#Stack of operations 
-		self.StackOperations = []
+		#------------------------------------------------------
+		# 	INITIALIZATION - QUADRUPLES
+		#------------------------------------------------------
+		self.cube = semanticCube()
+		self.quadruplesList = []
+		self.tempCounter = 1
+
+		# Operands stack
+		self.opdStack = []
+	
+		# Operators stack 
+		self.optStack = []
+
+	#------------------------------------------------------
+	# 	CLASS, FUNCTIONS AND VARIABLES
+	#-----------------------------------------------------
 
 	def enterClasses(self, ctx):
 		self.isPartOfClass = True
 
-	def enterClassDefinition(self, ctx):
+	def enterClass_definition(self, ctx):
 		# Create new class just with the ID and name of the class
 		# This will set current class to the recently created class
 		className = ctx.TOK_ID().getText()
@@ -73,7 +96,7 @@ class ruleManager(one_for_allListener):
 		except:
 			print("Error while reading private token, not possible to know if reading variable or method")
 
-	def enterVariableDefinition(self, ctx):
+	def enterVariable_definition(self, ctx):
 		try:
 			# Obtain type and names of the single or multiple variables associated to that type
 			# E.g: public var int a1, a2;
@@ -90,7 +113,7 @@ class ruleManager(one_for_allListener):
 		except:
 			print("Error while preparing information for variables creation")
 
-	def enterRoutineDefinition(self, ctx):
+	def enterRoutine_definition(self, ctx):
 		# Obtain type and name of routine to be created
 		routineName = ctx.TOK_ID().getText()
 		routineType = ctx.data_type().getText()
@@ -132,7 +155,7 @@ class ruleManager(one_for_allListener):
 		except:
 			print("Error while creating new routine")
 	
-	def exitClassDefinition(self, ctx):
+	def exitClass_definition(self, ctx):
 		# Call method to add finished class to the class directory
 		self.addFinishedClass(self.currentClass)
 
@@ -144,18 +167,196 @@ class ruleManager(one_for_allListener):
 		# Reset part of class boolean
 		self.isPartOfClass = False
 
-		# Print classes
-		print("--- CLASSES ---")
-		self.printClassDictionary()
+		'''
+		#print("--- CLASSES ---")
+		#self.printClassDictionary()
+		'''
 
-	def enterRestOfProgram(self, ctx):
+	def exitRestOfProgram(self, ctx):
+		pass
+		self.printQuadruples()
+
+		'''
 		print("--- GLOBAL VARIABLES ---")
 		self.printGlobalVariables()
 
 		print("--- FUNCTIONS ---")
 		self.printFunctions()
+		'''
 
-	''' AUXILIARY FUNCTIONS '''
+	#------------------------------------------------------
+	# QUADRUPLES
+	#------------------------------------------------------
+
+	def enterToken_and(self, ctx):
+		self.optStack.append(ctx.getText())
+
+	def enterToken_or(self, ctx):
+		self.optStack.append(ctx.getText())
+
+	def enterToken_same(self, ctx):
+		self.optStack.append(ctx.getText())
+
+	def enterToken_different(self, ctx):
+		self.optStack.append(ctx.getText())
+
+	def enterToken_greater(self, ctx):
+		self.optStack.append(ctx.getText())
+
+	def enterToken_greater_eq(self, ctx):
+		self.optStack.append(ctx.getText())
+
+	def enterToken_less(self, ctx):
+		self.optStack.append(ctx.getText())
+
+	def enterToken_less_eq(self, ctx):
+		self.optStack.append(ctx.getText())
+
+	def enterToken_plus(self, ctx):
+		self.optStack.append(ctx.getText())
+	
+	def enterToken_minus(self, ctx):
+		self.optStack.append(ctx.getText())
+	
+	def enterToken_multiplication(self, ctx):
+		self.optStack.append(ctx.getText())
+
+	def enterToken_division(self, ctx):
+		self.optStack.append(ctx.getText())
+
+	def enterToken_lparen(self, ctx):
+		self.optStack.append(ctx.getText())
+
+	def enterToken_rparen(self, ctx):
+		if self.optStack[-1] == "(":
+			self.optStack.pop()
+		else:
+			print("Error when reading ), ( was no on optStack")
+
+	def enterNeuro_expression(self, ctx):
+		if self.validateStacks():
+			if self.checkOperatorsOnStack(["&&", "||"]):
+				self.generateQuadruple()
+
+	def enterNeuro_relational(self, ctx):
+		if self.validateStacks():
+			if self.checkOperatorsOnStack(["<", "<=", ">", ">=", "==", "!="]):
+				self.generateQuadruple()
+
+	def enterNeuro_sumMinus(self, ctx):
+		if self.validateStacks():
+			if self.checkOperatorsOnStack(["+", "-"]):
+				self.generateQuadruple()
+
+	def enterNeuro_multiDiv(self, ctx):
+		if self.validateStacks():
+			if self.checkOperatorsOnStack(["*", "/"]):
+				self.generateQuadruple()
+				
+	def validateStacks(self):
+		return (len(self.optStack) > 0 and len(self.opdStack) > 0)
+
+	def checkOperatorsOnStack(self, listOperators):
+		for currentOperator in listOperators:
+			if self.optStack[-1] == currentOperator:
+				return True
+
+		return False
+
+	def generateQuadruple(self):
+				operator = self.optStack.pop()
+				right_tuple = self.opdStack.pop()
+				left_tuple = self.opdStack.pop()
+			
+				left_name = left_tuple[0]
+				left_type = left_tuple[1]
+				right_name = right_tuple[0]
+				right_type = right_tuple[1]
+
+				# Obtains codes from operators and operands
+				operator_code = self.cube.operatorToCode(operator) 
+				left_code = self.cube.typeToCode(left_type)
+				right_code = self.cube.typeToCode(right_type)
+				
+				resultType = self.cube.semanticValidation(operator_code, left_code, right_code)
+
+				# Display result
+				if resultType != -1:	
+					for key, value in self.cube.dicTypes.items():
+						if resultType == value:
+							resultName = key
+
+					# Create cuadruple
+					tempResult = "t" + str(self.tempCounter)
+					self.opdStack.append((tempResult, "int"))
+					self.tempCounter += 1
+
+					resultCuadruple = quadruples(operator, left_name, right_name, tempResult)
+					self.quadruplesList.append(resultCuadruple)
+
+				else:
+					print("Error: Invalid operation")
+			
+	# Enter a parse tree produced by one_for_allParser#id_.
+	def enterConstant(self, ctx):
+
+		try: 
+			idName = ctx.id_().getText()
+
+			if idName in self.globalVarsDirectory:
+				objVar = self.globalVarsDirectory[idName]
+				lst = (idName, objVar.data_type)
+				self.opdStack.append(lst)
+
+				#print("EVALUATE ID:", lst)
+			else:
+				print("Error, variable not found")
+		except:
+			pass
+
+		try: 
+			value = ctx.FLOAT().getText()
+
+			if value is not None:
+				lst = (value, "float")
+				print("EVALUATE FLOAT:", lst)
+				self.opdStack.append(lst)
+		except:
+			pass
+
+		try: 
+			value = ctx.INT().getText()
+
+			if value is not None:
+				lst = (value, "int")
+				#print("EVALUATE INT:", lst)
+				self.opdStack.append(lst)
+		except:
+			pass
+
+		try: 
+			value = ctx.STRING().getText()
+
+			if value is not None:
+				lst = (value, "string")
+				#print("EVALUATE STRING:", lst)
+				self.opdStack.append(lst)
+		except:
+			pass
+
+		try: 
+			value = ctx.BOOLEAN().getText()
+
+			if value is not None:
+				lst = (value, "bool")
+				#print("EVALUATE BOOLEAN:", lst)
+				self.opdStack.append(lst)
+		except:
+			pass
+
+	#------------------------------------------------------
+	#	AUXILIARY METHODS
+	#------------------------------------------------------
 	def printClassDictionary(self):
 		for key, _class in self.classDirectory.items():
 			#Print information of each class
@@ -171,7 +372,12 @@ class ruleManager(one_for_allListener):
 			#Print information of each function
 			function.printFunction()
 
-	''' CREATION METHODS '''
+	def printQuadruples(self):
+		counter = 1
+		for quadruple in self.quadruplesList:
+			print(counter, "QUAD", quadruple.opt, quadruple.opd1, quadruple.opd2, quadruple.result)
+			counter += 1
+
 	def createAddVariable(self, name, data_type):
 		if self.isPartOfClass:
 			# Set current privacy of the group of variables
@@ -226,58 +432,3 @@ class ruleManager(one_for_allListener):
 
 	def addFinishedClass(self, objClass):
 		self.classDirectory[objClass.name] = objClass
-	
-
-	#------------------------------------------------------
-	# GENERACION DE CUADRUPLOS
-	#------------------------------------------------------
-
-	# Enter a parse tree produced by one_for_allParser#rulesum.
-	def enterRulesum(self, ctx):
-		self.StackOperators.append(ctx.getText())
-	
-	# Enter a parse tree produced by one_for_allParser#ruleminus.
-	def enterRuleminus(self, ctx):
-		self.StackOperators.append(ctx.getText())
-	
-	 # Enter a parse tree produced by one_for_allParser#rulemultiply.
-	def enterRulemultiply(self, ctx):
-		self.StackOperators.append(ctx.getText())
-
-	# Enter a parse tree produced by one_for_allParser#ruledivide.
-	def enterRuledivide(self, ctx):
-		self.StackOperators.append(ctx.getText())
-
-	# Enter a parse tree produced by one_for_allParser#id_.
-	def enterId_(self, ctx):
-		lst = ctx.TOK_ID()
-		#M = [x for x in S if x % 2 == 0]
-		print(lst[0].getText())
-		try:
-			print(lst[1].getText())
-		except:
-			pass
-		#print(lst[1].getText())
-		#print(lst[x].getText() for x in len(lst))
-
-	# Enter a parse tree produced by one_for_allParser#getId.
-	def enterGetId(self, ctx:one_for_allParser.GetIdContext):
-		pass
-
-	def enterRegla4(self, ctx):
-		if self.StackOperators:
-			try:
-				if self.StackOperators[-1] is '+':
-					self.StackOperators.pop()
-					right = tuple(self.StackOperations[-1][0], self.StackOperations[-1][1])
-					self.StackOperations.pop()
-					left = tuple(self.StackOperations[-1][0], self.StackOperations[-1][1])
-					self.StackOperations.pop()
-					result = 0
-					lst = [right, left]
-					#validate with the semantic cube if operation is possible
-					quad = quadruples(1,lst, result) 
-					print("AHHAHAHAHAHHAHAHAHAHAH")
-					print(quad)
-			except:
-				pass
