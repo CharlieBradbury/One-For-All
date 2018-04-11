@@ -1,42 +1,7 @@
 program test01;
 
-class salute {
-	public var string hello, yellow, lala;
-	public var int yoyo, hallo; 
-	public var Bye lalo;
-	public function string sayHello(var string hola, var string addios, var int fellow) {
-			write("hello");
-		}
-}
-class farewell : hola {
-	public var int numero;
-	private var string bye;
-	private function string sayGoodbye(var string pivote, var int jaja) {
-			write(bye);
-		}
-}
 
-var int barbara, say, hello;
-var farewell obj;
-
-function string sayBitch(var string me, var string hello) {
-		write("hello");
-	}
 
 main {
-	obj[i + 1] = obj[i] * obj.atributo + obj.metodo(2) + i * fact(i);
-	if( barbara[2] > 3 && 5 - 2 > 4){
-	write("hola");
-	}
-
-	if(10 != 2){
-		write(barbara[2]);
-	}
-
-	if(hello != bye){
-		write("different");
-	}
-	else {
-	hola = (2 * 3 + (2 - 3)) - 3.5;
-	}
+	barbara = (1 * (2 + 4) * 6 + 10) > 50;
 }

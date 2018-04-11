@@ -35,12 +35,12 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by one_for_allParser#classDefinition.
-    def enterClassDefinition(self, ctx:one_for_allParser.ClassDefinitionContext):
+    # Enter a parse tree produced by one_for_allParser#class_definition.
+    def enterClass_definition(self, ctx:one_for_allParser.Class_definitionContext):
         pass
 
-    # Exit a parse tree produced by one_for_allParser#classDefinition.
-    def exitClassDefinition(self, ctx:one_for_allParser.ClassDefinitionContext):
+    # Exit a parse tree produced by one_for_allParser#class_definition.
+    def exitClass_definition(self, ctx:one_for_allParser.Class_definitionContext):
         pass
 
 
@@ -80,12 +80,12 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by one_for_allParser#routineDefinition.
-    def enterRoutineDefinition(self, ctx:one_for_allParser.RoutineDefinitionContext):
+    # Enter a parse tree produced by one_for_allParser#routine_definition.
+    def enterRoutine_definition(self, ctx:one_for_allParser.Routine_definitionContext):
         pass
 
-    # Exit a parse tree produced by one_for_allParser#routineDefinition.
-    def exitRoutineDefinition(self, ctx:one_for_allParser.RoutineDefinitionContext):
+    # Exit a parse tree produced by one_for_allParser#routine_definition.
+    def exitRoutine_definition(self, ctx:one_for_allParser.Routine_definitionContext):
         pass
 
 
@@ -116,12 +116,12 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by one_for_allParser#variableDefinition.
-    def enterVariableDefinition(self, ctx:one_for_allParser.VariableDefinitionContext):
+    # Enter a parse tree produced by one_for_allParser#variable_definition.
+    def enterVariable_definition(self, ctx:one_for_allParser.Variable_definitionContext):
         pass
 
-    # Exit a parse tree produced by one_for_allParser#variableDefinition.
-    def exitVariableDefinition(self, ctx:one_for_allParser.VariableDefinitionContext):
+    # Exit a parse tree produced by one_for_allParser#variable_definition.
+    def exitVariable_definition(self, ctx:one_for_allParser.Variable_definitionContext):
         pass
 
 
@@ -206,93 +206,228 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by one_for_allParser#output_aux.
-    def enterOutput_aux(self, ctx:one_for_allParser.Output_auxContext):
+    # Enter a parse tree produced by one_for_allParser#condition_else.
+    def enterCondition_else(self, ctx:one_for_allParser.Condition_elseContext):
         pass
 
-    # Exit a parse tree produced by one_for_allParser#output_aux.
-    def exitOutput_aux(self, ctx:one_for_allParser.Output_auxContext):
-        pass
-
-
-    # Enter a parse tree produced by one_for_allParser#escrituraaux.
-    def enterEscrituraaux(self, ctx:one_for_allParser.EscrituraauxContext):
-        pass
-
-    # Exit a parse tree produced by one_for_allParser#escrituraaux.
-    def exitEscrituraaux(self, ctx:one_for_allParser.EscrituraauxContext):
+    # Exit a parse tree produced by one_for_allParser#condition_else.
+    def exitCondition_else(self, ctx:one_for_allParser.Condition_elseContext):
         pass
 
 
-    # Enter a parse tree produced by one_for_allParser#conditionelse.
-    def enterConditionelse(self, ctx:one_for_allParser.ConditionelseContext):
+    # Enter a parse tree produced by one_for_allParser#expressions.
+    def enterExpressions(self, ctx:one_for_allParser.ExpressionsContext):
         pass
 
-    # Exit a parse tree produced by one_for_allParser#conditionelse.
-    def exitConditionelse(self, ctx:one_for_allParser.ConditionelseContext):
-        pass
-
-
-    # Enter a parse tree produced by one_for_allParser#expr.
-    def enterExpr(self, ctx:one_for_allParser.ExprContext):
-        pass
-
-    # Exit a parse tree produced by one_for_allParser#expr.
-    def exitExpr(self, ctx:one_for_allParser.ExprContext):
+    # Exit a parse tree produced by one_for_allParser#expressions.
+    def exitExpressions(self, ctx:one_for_allParser.ExpressionsContext):
         pass
 
 
-    # Enter a parse tree produced by one_for_allParser#expr_aux.
-    def enterExpr_aux(self, ctx:one_for_allParser.Expr_auxContext):
+    # Enter a parse tree produced by one_for_allParser#expression_definition.
+    def enterExpression_definition(self, ctx:one_for_allParser.Expression_definitionContext):
         pass
 
-    # Exit a parse tree produced by one_for_allParser#expr_aux.
-    def exitExpr_aux(self, ctx:one_for_allParser.Expr_auxContext):
-        pass
-
-
-    # Enter a parse tree produced by one_for_allParser#relational_expr.
-    def enterRelational_expr(self, ctx:one_for_allParser.Relational_exprContext):
-        pass
-
-    # Exit a parse tree produced by one_for_allParser#relational_expr.
-    def exitRelational_expr(self, ctx:one_for_allParser.Relational_exprContext):
+    # Exit a parse tree produced by one_for_allParser#expression_definition.
+    def exitExpression_definition(self, ctx:one_for_allParser.Expression_definitionContext):
         pass
 
 
-    # Enter a parse tree produced by one_for_allParser#sumMinus_expr.
-    def enterSumMinus_expr(self, ctx:one_for_allParser.SumMinus_exprContext):
+    # Enter a parse tree produced by one_for_allParser#neuro_expression.
+    def enterNeuro_expression(self, ctx:one_for_allParser.Neuro_expressionContext):
         pass
 
-    # Exit a parse tree produced by one_for_allParser#sumMinus_expr.
-    def exitSumMinus_expr(self, ctx:one_for_allParser.SumMinus_exprContext):
-        pass
-
-
-    # Enter a parse tree produced by one_for_allParser#expr_aux2.
-    def enterExpr_aux2(self, ctx:one_for_allParser.Expr_aux2Context):
-        pass
-
-    # Exit a parse tree produced by one_for_allParser#expr_aux2.
-    def exitExpr_aux2(self, ctx:one_for_allParser.Expr_aux2Context):
+    # Exit a parse tree produced by one_for_allParser#neuro_expression.
+    def exitNeuro_expression(self, ctx:one_for_allParser.Neuro_expressionContext):
         pass
 
 
-    # Enter a parse tree produced by one_for_allParser#multiDiv_expr.
-    def enterMultiDiv_expr(self, ctx:one_for_allParser.MultiDiv_exprContext):
+    # Enter a parse tree produced by one_for_allParser#token_and.
+    def enterToken_and(self, ctx:one_for_allParser.Token_andContext):
         pass
 
-    # Exit a parse tree produced by one_for_allParser#multiDiv_expr.
-    def exitMultiDiv_expr(self, ctx:one_for_allParser.MultiDiv_exprContext):
+    # Exit a parse tree produced by one_for_allParser#token_and.
+    def exitToken_and(self, ctx:one_for_allParser.Token_andContext):
         pass
 
 
-    # Enter a parse tree produced by one_for_allParser#expr_aux3.
-    def enterExpr_aux3(self, ctx:one_for_allParser.Expr_aux3Context):
+    # Enter a parse tree produced by one_for_allParser#token_or.
+    def enterToken_or(self, ctx:one_for_allParser.Token_orContext):
         pass
 
-    # Exit a parse tree produced by one_for_allParser#expr_aux3.
-    def exitExpr_aux3(self, ctx:one_for_allParser.Expr_aux3Context):
+    # Exit a parse tree produced by one_for_allParser#token_or.
+    def exitToken_or(self, ctx:one_for_allParser.Token_orContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#relational_exprs.
+    def enterRelational_exprs(self, ctx:one_for_allParser.Relational_exprsContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#relational_exprs.
+    def exitRelational_exprs(self, ctx:one_for_allParser.Relational_exprsContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#relational_expr_definition.
+    def enterRelational_expr_definition(self, ctx:one_for_allParser.Relational_expr_definitionContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#relational_expr_definition.
+    def exitRelational_expr_definition(self, ctx:one_for_allParser.Relational_expr_definitionContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#neuro_relational.
+    def enterNeuro_relational(self, ctx:one_for_allParser.Neuro_relationalContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_relational.
+    def exitNeuro_relational(self, ctx:one_for_allParser.Neuro_relationalContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#token_same.
+    def enterToken_same(self, ctx:one_for_allParser.Token_sameContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#token_same.
+    def exitToken_same(self, ctx:one_for_allParser.Token_sameContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#token_different.
+    def enterToken_different(self, ctx:one_for_allParser.Token_differentContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#token_different.
+    def exitToken_different(self, ctx:one_for_allParser.Token_differentContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#token_greater.
+    def enterToken_greater(self, ctx:one_for_allParser.Token_greaterContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#token_greater.
+    def exitToken_greater(self, ctx:one_for_allParser.Token_greaterContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#token_greater_eq.
+    def enterToken_greater_eq(self, ctx:one_for_allParser.Token_greater_eqContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#token_greater_eq.
+    def exitToken_greater_eq(self, ctx:one_for_allParser.Token_greater_eqContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#token_less.
+    def enterToken_less(self, ctx:one_for_allParser.Token_lessContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#token_less.
+    def exitToken_less(self, ctx:one_for_allParser.Token_lessContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#token_less_eq.
+    def enterToken_less_eq(self, ctx:one_for_allParser.Token_less_eqContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#token_less_eq.
+    def exitToken_less_eq(self, ctx:one_for_allParser.Token_less_eqContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#sumMinus_exprs.
+    def enterSumMinus_exprs(self, ctx:one_for_allParser.SumMinus_exprsContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#sumMinus_exprs.
+    def exitSumMinus_exprs(self, ctx:one_for_allParser.SumMinus_exprsContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#sumMinus_expr_definition.
+    def enterSumMinus_expr_definition(self, ctx:one_for_allParser.SumMinus_expr_definitionContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#sumMinus_expr_definition.
+    def exitSumMinus_expr_definition(self, ctx:one_for_allParser.SumMinus_expr_definitionContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#neuro_sumMinus.
+    def enterNeuro_sumMinus(self, ctx:one_for_allParser.Neuro_sumMinusContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_sumMinus.
+    def exitNeuro_sumMinus(self, ctx:one_for_allParser.Neuro_sumMinusContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#token_plus.
+    def enterToken_plus(self, ctx:one_for_allParser.Token_plusContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#token_plus.
+    def exitToken_plus(self, ctx:one_for_allParser.Token_plusContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#token_minus.
+    def enterToken_minus(self, ctx:one_for_allParser.Token_minusContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#token_minus.
+    def exitToken_minus(self, ctx:one_for_allParser.Token_minusContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#multiDiv_exprs.
+    def enterMultiDiv_exprs(self, ctx:one_for_allParser.MultiDiv_exprsContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#multiDiv_exprs.
+    def exitMultiDiv_exprs(self, ctx:one_for_allParser.MultiDiv_exprsContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#multiDiv_expr_definition.
+    def enterMultiDiv_expr_definition(self, ctx:one_for_allParser.MultiDiv_expr_definitionContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#multiDiv_expr_definition.
+    def exitMultiDiv_expr_definition(self, ctx:one_for_allParser.MultiDiv_expr_definitionContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#neuro_multiDiv.
+    def enterNeuro_multiDiv(self, ctx:one_for_allParser.Neuro_multiDivContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_multiDiv.
+    def exitNeuro_multiDiv(self, ctx:one_for_allParser.Neuro_multiDivContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#token_multiplication.
+    def enterToken_multiplication(self, ctx:one_for_allParser.Token_multiplicationContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#token_multiplication.
+    def exitToken_multiplication(self, ctx:one_for_allParser.Token_multiplicationContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#token_division.
+    def enterToken_division(self, ctx:one_for_allParser.Token_divisionContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#token_division.
+    def exitToken_division(self, ctx:one_for_allParser.Token_divisionContext):
         pass
 
 
@@ -302,6 +437,24 @@ class one_for_allListener(ParseTreeListener):
 
     # Exit a parse tree produced by one_for_allParser#factor.
     def exitFactor(self, ctx:one_for_allParser.FactorContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#token_lparen.
+    def enterToken_lparen(self, ctx:one_for_allParser.Token_lparenContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#token_lparen.
+    def exitToken_lparen(self, ctx:one_for_allParser.Token_lparenContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#token_rparen.
+    def enterToken_rparen(self, ctx:one_for_allParser.Token_rparenContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#token_rparen.
+    def exitToken_rparen(self, ctx:one_for_allParser.Token_rparenContext):
         pass
 
 
@@ -320,6 +473,42 @@ class one_for_allListener(ParseTreeListener):
 
     # Exit a parse tree produced by one_for_allParser#id_.
     def exitId_(self, ctx:one_for_allParser.Id_Context):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#id_definition_.
+    def enterId_definition_(self, ctx:one_for_allParser.Id_definition_Context):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#id_definition_.
+    def exitId_definition_(self, ctx:one_for_allParser.Id_definition_Context):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#evaluate_class.
+    def enterEvaluate_class(self, ctx:one_for_allParser.Evaluate_classContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#evaluate_class.
+    def exitEvaluate_class(self, ctx:one_for_allParser.Evaluate_classContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#evaluate_function.
+    def enterEvaluate_function(self, ctx:one_for_allParser.Evaluate_functionContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#evaluate_function.
+    def exitEvaluate_function(self, ctx:one_for_allParser.Evaluate_functionContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#evaluate_array.
+    def enterEvaluate_array(self, ctx:one_for_allParser.Evaluate_arrayContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#evaluate_array.
+    def exitEvaluate_array(self, ctx:one_for_allParser.Evaluate_arrayContext):
         pass
 
 
