@@ -109,3 +109,8 @@ venv.bak/
 
 # Windows
 Thumbs.db
+
+#files from parser
+parser/one_for_allParser.py
+parser/one_for_allLexer.py
+parser/one_for_all.interp
