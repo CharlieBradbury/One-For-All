@@ -105,7 +105,13 @@ assignment:
     id_ TOK_EQUAL expressions TOK_SEMICOLON;
 
 condition:
-    TOK_IF TOK_LPAREN expressions TOK_RPAREN block condition_else;
+    TOK_IF TOK_LPAREN expressions TOK_RPAREN neuro_if block condition_else neuro_endif;
+
+neuro_if:
+;
+
+neuro_endif:
+;
 
 loop:
     TOK_WHILE TOK_LPAREN expressions TOK_RPAREN block;
@@ -117,7 +123,10 @@ output:
 	TOK_WRITE TOK_LPAREN ((expressions | STRING) (TOK_COMMA)?)+ TOK_RPAREN TOK_SEMICOLON;
 
 condition_else:
-    (TOK_ELSE block)?;
+    (neuro_else TOK_ELSE block)?;
+
+neuro_else:
+;
 
 expressions:
 	(expression_definition)+;

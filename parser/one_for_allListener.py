@@ -179,6 +179,24 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by one_for_allParser#neuro_if.
+    def enterNeuro_if(self, ctx:one_for_allParser.Neuro_ifContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_if.
+    def exitNeuro_if(self, ctx:one_for_allParser.Neuro_ifContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#neuro_endif.
+    def enterNeuro_endif(self, ctx:one_for_allParser.Neuro_endifContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_endif.
+    def exitNeuro_endif(self, ctx:one_for_allParser.Neuro_endifContext):
+        pass
+
+
     # Enter a parse tree produced by one_for_allParser#loop.
     def enterLoop(self, ctx:one_for_allParser.LoopContext):
         pass
@@ -212,6 +230,15 @@ class one_for_allListener(ParseTreeListener):
 
     # Exit a parse tree produced by one_for_allParser#condition_else.
     def exitCondition_else(self, ctx:one_for_allParser.Condition_elseContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#neuro_else.
+    def enterNeuro_else(self, ctx:one_for_allParser.Neuro_elseContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_else.
+    def exitNeuro_else(self, ctx:one_for_allParser.Neuro_elseContext):
         pass
 
 

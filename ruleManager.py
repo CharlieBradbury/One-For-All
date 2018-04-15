@@ -26,6 +26,9 @@ class ruleManager(one_for_allListener):
 		# Starting IDCounter at 0
 		self.IDCounter = 0
 
+		# Counter for quadruples
+		self.counter = 1
+
 		#------------------------------------------------------
 		# 	INITIALIZATION - CLASS, FUNCTIONS AND VARIABLES
 		#------------------------------------------------------
@@ -59,6 +62,9 @@ class ruleManager(one_for_allListener):
 	
 		# Operators stack 
 		self.optStack = []
+
+		# Jumps stack
+		self.jumpStack = []
 
 	#------------------------------------------------------
 	# 	CLASS, FUNCTIONS AND VARIABLES
@@ -268,7 +274,6 @@ class ruleManager(one_for_allListener):
 				operator = self.optStack.pop()
 				right_tuple = self.opdStack.pop()
 				left_tuple = self.opdStack.pop()
-			
 				left_name = left_tuple[0]
 				left_type = left_tuple[1]
 				right_name = right_tuple[0]
@@ -289,15 +294,27 @@ class ruleManager(one_for_allListener):
 
 					# Create cuadruple
 					tempResult = "t" + str(self.tempCounter)
-					self.opdStack.append((tempResult, "int"))
+					self.opdStack.append((tempResult, resultName))
 					self.tempCounter += 1
-
-					resultCuadruple = quadruples(operator, left_name, right_name, tempResult)
+					resultCuadruple = quadruples(self.counter,operator, left_name, right_name, tempResult)
+					self.counter += 1
 					self.quadruplesList.append(resultCuadruple)
 
 				else:
 					print("Error: Invalid operation")
-			
+
+	def generatesQuadruple(self, type, left, right, result):
+		if type is 'GotoF' or 'Goto':
+			left = "t" + str(self.tempCounter)
+			self.tempCounter += 1
+			resultCuadruple = quadruples(self.counter, type, left, right, result)
+			self.counter += 1
+			self.quadruplesList.append(resultCuadruple)
+
+	def fill(self, id, cont):
+		quad = list(filter(lambda x: x.id == id, self.quadruplesList))
+		quad[0].result = cont
+
 	# Enter a parse tree produced by one_for_allParser#id_.
 	def enterConstant(self, ctx):
 
@@ -355,6 +372,37 @@ class ruleManager(one_for_allListener):
 		except:
 			pass
 
+	# IF STATEMENT
+	def enterNeuro_if(self, ctx):
+		try:
+			result = self.opdStack.pop()
+			exp_type = result[1]
+			if exp_type is not 'bool':
+				print("Error: type mismatch if")
+			else:
+				self.generatesQuadruple('GotoF', None, None, None)
+				self.jumpStack.append(("IF",self.counter - 1))
+
+		#semanticValidation(exp_type, )
+		except:
+			pass
+	
+	def enterNeuro_endif(self, ctx):
+		try:
+			endif = self.jumpStack.pop()[1]
+			self.fill(endif,self.counter)
+		except:
+			pass
+
+	def enterNeuro_else(self, ctx):	
+		try:
+			self.generatesQuadruple('Goto', None, None, None)
+			false = self.jumpStack.pop()[1]
+			self.jumpStack.append(('ELSE', self.counter - 1))
+			self.fill(false, self.counter)
+		except:
+			pass
+
 	#------------------------------------------------------
 	#	AUXILIARY METHODS
 	#------------------------------------------------------
@@ -376,7 +424,7 @@ class ruleManager(one_for_allListener):
 	def printQuadruples(self):
 		counter = 1
 		for quadruple in self.quadruplesList:
-			print(counter, "QUAD", quadruple.opt, quadruple.opd1, quadruple.opd2, quadruple.result)
+			print(quadruple.id, "QUAD", quadruple.opt, quadruple.opd1, quadruple.opd2, quadruple.result)
 			counter += 1
 
 	def createAddVariable(self, name, data_type):

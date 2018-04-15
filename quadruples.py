@@ -13,9 +13,14 @@
 # GREATER_EQUAL_THAN = 10
 # LESS_THAN = 11
 # GREATER_THAN = 12
-
+#
+# JUMPS
+# GOTOF = 13
+# GOTO = 14
+# GOSUB = 15
 class quadruples():
-    def __init__(self, opt, opd1, opd2, result):
+    def __init__(self, counter, opt, opd1, opd2, result):
+        self.id = counter
         self.opt = opt
         self.opd1 = opd1
         self.opd2 = opd2

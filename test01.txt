@@ -18,4 +18,14 @@ class farewell : hola {
 
 main {
 	barbara = (1 * (2 + 4) * 6 + 10) > 50;
+	if(3*2>2) {
+		write("hi");
+	}
+	barbara = (1 * (2 + 4) * 6 + 10) > 50;
+	if(hola) {
+		write("helo");
+	} else {
+		barbara = 3 * 4;
+	}
+	lala = 2 + 1;
 }
