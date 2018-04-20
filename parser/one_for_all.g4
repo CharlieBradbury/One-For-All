@@ -87,7 +87,8 @@ variables:
     (variable_definition)+;
 
 variable_definition:
-	TOK_VAR data_type TOK_ID (TOK_COMMA TOK_ID)* TOK_SEMICOLON;
+	TOK_VAR data_type TOK_ID (TOK_LBRACKET expressions TOK_RBRACKET)? (TOK_COMMA TOK_ID (TOK_LBRACKET expressions TOK_RBRACKET)?  )* TOK_SEMICOLON;
+
 
 data_type:
     (TOK_INT | TOK_FLOAT | TOK_STRING | TOK_BOOLEAN | TOK_ID);
@@ -102,7 +103,10 @@ statute:
     (assignment | condition | loop | output | input_ | variables)*;
 
 assignment:
-    id_ TOK_EQUAL expressions TOK_SEMICOLON;
+    neuro_assign id_ TOK_EQUAL expressions TOK_SEMICOLON;
+
+neuro_assign:
+;
 
 condition:
     TOK_IF TOK_LPAREN expressions TOK_RPAREN neuro_if block condition_else neuro_endif;

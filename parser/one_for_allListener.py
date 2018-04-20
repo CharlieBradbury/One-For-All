@@ -170,6 +170,15 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by one_for_allParser#neuro_assign.
+    def enterNeuro_assign(self, ctx:one_for_allParser.Neuro_assignContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_assign.
+    def exitNeuro_assign(self, ctx:one_for_allParser.Neuro_assignContext):
+        pass
+
+
     # Enter a parse tree produced by one_for_allParser#condition.
     def enterCondition(self, ctx:one_for_allParser.ConditionContext):
         pass
