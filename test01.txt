@@ -15,17 +15,21 @@ class farewell : hola {
 			write(perro);
 		}
 }
-
+var bool j;
+var int barbara;
+var int drink[23 + 1];
+var string drama;
 main {
-	barbara = (1 * (2 + 4) * 6 + 10) > 50;
+	j = (1 * (2 + 4) * 6 + 10) > 50;
 	if(3*2>2) {
 		write("hi");
 	}
-	barbara = (1 * (2 + 4) * 6 + 10) > 50;
-	if(hola) {
+	j = (1 * (2 + 4) * 6 + 10) > 50;
+	if(3 > 2) {
+		barbara = 3 + 2;
 		write("helo");
 	} else {
 		barbara = 3 * 4;
 	}
-	lala = 2 + 1;
+	drama = "hola";
 }
