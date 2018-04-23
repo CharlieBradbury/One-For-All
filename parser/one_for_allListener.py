@@ -107,6 +107,15 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by one_for_allParser#neuro_array.
+    def enterNeuro_array(self, ctx:one_for_allParser.Neuro_arrayContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_array.
+    def exitNeuro_array(self, ctx:one_for_allParser.Neuro_arrayContext):
+        pass
+
+
     # Enter a parse tree produced by one_for_allParser#variables.
     def enterVariables(self, ctx:one_for_allParser.VariablesContext):
         pass
@@ -122,6 +131,15 @@ class one_for_allListener(ParseTreeListener):
 
     # Exit a parse tree produced by one_for_allParser#variable_definition.
     def exitVariable_definition(self, ctx:one_for_allParser.Variable_definitionContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#variable_assign.
+    def enterVariable_assign(self, ctx:one_for_allParser.Variable_assignContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#variable_assign.
+    def exitVariable_assign(self, ctx:one_for_allParser.Variable_assignContext):
         pass
 
 
@@ -152,6 +170,15 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by one_for_allParser#return_expr.
+    def enterReturn_expr(self, ctx:one_for_allParser.Return_exprContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#return_expr.
+    def exitReturn_expr(self, ctx:one_for_allParser.Return_exprContext):
+        pass
+
+
     # Enter a parse tree produced by one_for_allParser#statute.
     def enterStatute(self, ctx:one_for_allParser.StatuteContext):
         pass
@@ -167,15 +194,6 @@ class one_for_allListener(ParseTreeListener):
 
     # Exit a parse tree produced by one_for_allParser#assignment.
     def exitAssignment(self, ctx:one_for_allParser.AssignmentContext):
-        pass
-
-
-    # Enter a parse tree produced by one_for_allParser#neuro_assign.
-    def enterNeuro_assign(self, ctx:one_for_allParser.Neuro_assignContext):
-        pass
-
-    # Exit a parse tree produced by one_for_allParser#neuro_assign.
-    def exitNeuro_assign(self, ctx:one_for_allParser.Neuro_assignContext):
         pass
 
 

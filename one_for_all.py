@@ -12,7 +12,7 @@ def main(argv):
 	lexer = one_for_allLexer(input)
 	stream = CommonTokenStream(lexer)
 	parser = one_for_allParser(stream)
-	print("Start Walking...")
+
 	tree = parser.programa()
 	walker = ParseTreeWalker()
 	oneforAll = ruleManager()

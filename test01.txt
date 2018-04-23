@@ -12,14 +12,27 @@ class farewell : hola {
 	public var int numero;
 	private var string bye;
 	private function string sayGoodbye(var string pivote, var int jaja) {
-			write(perro);
+
 		}
 }
+
 var bool j;
 var int barbara;
-var int drink[23 + 1];
+var int drink[3];
 var string drama;
+
+function string sayGoodbye(var string bitch, var string nomas[2], var int hi[4], var int times[3]) {
+	var int contador = 0;
+	barbara = 4 * 3 + 8 * 9;
+	drama = "hai";
+	return drama;
+}
+
 main {
+	var string python = "hello";
+	var int hello = 2, hi = 4, bye = 5;
+
+	var int dyr[2]; 
 	j = (1 * (2 + 4) * 6 + 10) > 50;
 	if(3*2>2) {
 		write("hi");

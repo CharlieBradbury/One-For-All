@@ -5,7 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from parser.one_for_allLexer import one_for_allLexer
 from parser.one_for_allParser import one_for_allParser
 from parser.one_for_allListener import one_for_allListener
-from scopeManager import scopeManager
+from scope import scope
 from objClass import *
 from objFunction import objFunction
 from objVariable import objVariable
@@ -13,7 +13,10 @@ from collections import OrderedDict
 from semanticCube import semanticCube
 from quadruples import quadruples
 from variableDirectory import variableDirectory
+from functionDirectory import functionDirectory
 from addressManager import addressManager
+from errorHandler import errorHandler
+
 class ruleManager(one_for_allListener):
 
 	#------------------------------------------------------
@@ -31,6 +34,7 @@ class ruleManager(one_for_allListener):
 		# Counter for quadruples
 		self.counter = 1
 
+		#Object that handles all memory directions
 		self.addressManager = addressManager()
 		#------------------------------------------------------
 		# 	INITIALIZATION - CLASS, FUNCTIONS AND VARIABLES
@@ -39,11 +43,8 @@ class ruleManager(one_for_allListener):
 		# Class Directory
 		self.classDirectory = dict()
 
-		# Global variables
-		self.globalVarsDirectory = dict()
-
 		# Function directory
-		self.functionDirectory = dict()
+		self.funcDirectory = functionDirectory()
 
 		# Variable Directory
 		self.varDirectory = variableDirectory()
@@ -51,17 +52,24 @@ class ruleManager(one_for_allListener):
 		# Current class (Type: objClass)
 		self.currentClass = None
 
+		#Scope Manager stack that stores the scopes
+		current_scope = scope("global", None)
+		self.scopeManager = []
+		self.scopeManager.append(current_scope)
+
 		# Boolean to check if reading a class, if reading a method
 		# and if the current var/method is public
 		self.isPartOfClass = False
 		self.isPublic = False
+
+		#Object that manages errors		
+		self.error = errorHandler()
 
 		#------------------------------------------------------
 		# 	INITIALIZATION - QUADRUPLES
 		#------------------------------------------------------
 		self.cube = semanticCube()
 		self.quadruplesList = []
-		self.tempCounter = 1
 
 		# Operands stack
 		self.opdStack = []
@@ -72,9 +80,27 @@ class ruleManager(one_for_allListener):
 		# Jumps stack
 		self.jumpStack = []
 
+		#Variable stack for declaring and assigning values
+		self.variableStack = []
+
+		#Stack for managing func types for returns 
+		self.funcStack = []
+	
+		#------------------------------------------------------
+		#	CREATE FIRST QUADRUPLE
+		#   Goto to the main method
+		#-----------------------------------------------------
+		self.generatesQuadruple('Goto', None, None, None)
+		self.jumpStack.append(('Main',self.counter - 1))
+
+
 	#------------------------------------------------------
 	# 	CLASS, FUNCTIONS AND VARIABLES
 	#-----------------------------------------------------
+
+	def enterMain(self, ctx):
+		main = self.jumpStack.pop()[1]
+		self.fillQuadruple(main,self.counter)
 
 	def enterClasses(self, ctx):
 		self.isPartOfClass = True
@@ -130,11 +156,36 @@ class ruleManager(one_for_allListener):
 					#Create object
 					newVariable = self.createAddVariable(var.getText(), currentType, dim) 
 			except:
-				print("Error while creating new variable")
-				sys.exit()
+				self.error.definition(self.error.VARIABLE_CREATION, '', '')
+
 		except:
-			print("Error while preparing information for variables creation")
-			sys.exit()
+			pass
+
+	def enterVariable_assign(self, ctx):
+		try:
+			# Obtain type and names of the single or multiple variables associated to that type
+			# E.g: public var int a1, a2;
+			currentType = ctx.data_type().getText()
+			currentVariables = ctx.TOK_ID()
+
+			if ctx.TOK_RBRACKET():
+				dim = 1
+				size = self.opdStack[-1]
+			else:
+				dim = 0
+
+			try:
+				# For each name, create an object variable with such information
+				for var in currentVariables:
+					#Create object
+					newVariable = self.createAddVariable(var.getText(), currentType, dim) 
+					self.variableStack.append(var.getText())
+			except:
+				self.error.definition(self.error.VARIABLE_CREATION, '', '')
+
+		except:
+			pass
+
 
 	def enterRoutine_definition(self, ctx):
 		# Obtain type and name of routine to be created
@@ -149,9 +200,11 @@ class ruleManager(one_for_allListener):
 			paramName = ctx.parameters().TOK_ID().getText()
 			paramType =  ctx.parameters().data_type().getText()
 
-			# Temporal parameters, 999 because not sure if these variables should have and ID or not
-			tempParam = objVariable(999, paramName, paramType)
+			#Create object variable for each parameter, always assume is a non array variable
+			tempParam = objVariable(self.addressManager.getVirtualAddress(paramType,"local"), paramName, paramType,0)
+			self.addressManager.updateVirtualAddress(paramType,"local")
 			routineParameters.append(tempParam)
+
 		except:
 			pass
 
@@ -163,11 +216,11 @@ class ruleManager(one_for_allListener):
 				# Counter for recursive parameters, this is used for accesing parameters that go after the first one
 				paramType = ctx.parameters().parameters_recursive().data_type(countParameters).getText()
 				paramName = ctx.parameters().parameters_recursive().TOK_ID(countParameters).getText()
-
-				# Temporal parameters, 999 because not sure if these variables should have and ID or not
-				tempParam = objVariable(999, paramName, paramType)
+ 				#Always assume is a non array variable
+				tempParam = objVariable(self.addressManager.getVirtualAddress(paramType,"local"), paramName, paramType,0)
+				self.addressManager.updateVirtualAddress(paramType,"local")
 				routineParameters.append(tempParam)
-
+				'''CHECK PARAMETERS NOT WORKING WITH ARRAYS'''
 				countParameters += 1
 		except:
 			pass
@@ -178,6 +231,18 @@ class ruleManager(one_for_allListener):
 		except:
 			print("Error while creating new routine")
 			sys.exit()
+
+	
+	def enterNeuro_array(self, ctx):
+		pass
+		'''param = self.routineParameters.pop()
+		value = self.opdStack.pop()
+		new_paramType = param[0]
+		new_param = param[1]
+		size = value[0]'''
+
+		'''self.routineParameters.append([new_paramType, new_param, size])'''
+
 	
 	def exitClass_definition(self, ctx):
 		# Call method to add finished class to the class directory
@@ -202,14 +267,9 @@ class ruleManager(one_for_allListener):
 
 		for key, var in self.varDirectory.directory.items():
 			print(var.printVariable())
-
-		'''
-		print("--- GLOBAL VARIABLES ---")
-		self.printGlobalVariables()
-
-		print("--- FUNCTIONS ---")
-		self.printFunctions()
-		'''
+		
+		for key, func in self.funcDirectory.directory.items():
+			func.printFunction()
 
 	#------------------------------------------------------
 	# QUADRUPLES
@@ -224,6 +284,28 @@ class ruleManager(one_for_allListener):
 		val = self.opdStack.pop()
 		#Create quadruple
 		self.generatesQuadruple('=',val, variable, None)
+	
+	def exitVariable_assign(self, ctx):
+		#Can declare and assign values to multiple variables
+		while self.variableStack:
+			#Get the name of the variable 
+			name = self.variableStack.pop()
+			#Verify that the name exists in the variable table
+			if self.varDirectory.checkVariable(name):
+				variable = self.varDirectory.getAddressVariable(name)
+			#Get the corresponding value of the expression
+			val = self.opdStack.pop()
+			#Create quadruple
+			self.generatesQuadruple('=',val, variable, None)
+	
+	def exitReturn_expr(self, ctx):
+		#Get the value of the expression 
+		val = self.opdStack.pop()
+		#Check if the val matches type of the function
+		function = self.funcStack.pop()
+		#Generate quadruple
+		self.generatesQuadruple('RETURN',val, function, None)
+
 
 	def enterToken_and(self, ctx):
 		self.optStack.append(ctx.getText())
@@ -324,7 +406,6 @@ class ruleManager(one_for_allListener):
 						if resultType == value:
 							resultName = key
 
-					#TO DO: Modular el siguiente fragmento de codigo
 					temp = self.addressManager.getVirtualAddress(resultName,"temporal")
 					self.opdStack.append(('&'+str(temp), resultName))
 					resultCuadruple = quadruples(self.counter,operator, left_name, right_name, '&'+str(temp))
@@ -334,8 +415,7 @@ class ruleManager(one_for_allListener):
 					self.quadruplesList.append(resultCuadruple)
 
 				else:
-					print("Error: Invalid operation")
-					sys.exit()
+					self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
 
 	#Method that generates quadruples for conditionals, loops, assignments, classes and functions
 	def generatesQuadruple(self, operator, left, right, result):
@@ -348,24 +428,34 @@ class ruleManager(one_for_allListener):
 			self.counter += 1
 			self.quadruplesList.append(resultCuadruple)
 		elif operator ==  '=':
+			left_type = left[1]
+			right_type = right.data_type
 			# Obtains codes from operators and operands
 			operator_code = self.cube.operatorToCode(operator) 
-			left_code = self.cube.typeToCode(left[1])
-			right_code = self.cube.typeToCode(right.data_type)
-
+			left_code = self.cube.typeToCode(left_type)
+			right_code = self.cube.typeToCode(right_type)
 			resultType = self.cube.semanticValidation(operator_code, left_code, right_code)
+
 			if resultType != -1:
 				resultCuadruple = quadruples(self.counter,operator, left[0], None, '&'+str(right.id))
 				self.counter += 1
 				self.quadruplesList.append(resultCuadruple)
 			else:
-				print("Error: Invalid operation")
-				sys.exit()
-			
+
+				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
+		else:
+			left_type = left[1]
+			right_type = right[1]
+			if left_type == right_type:
+				resultCuadruple = quadruples(self.counter,operator, None, None, left[0])
+				self.counter += 1
+				self.quadruplesList.append(resultCuadruple)
+			else:
+				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
 
 
-	#Methodn that retrieves an specific quadruple and modifies its value
-	def findQuadruple(self, id, cont):
+	#Method that retrieves an specific quadruple and modifies its value
+	def fillQuadruple(self, id, cont):
 		quad = list(filter(lambda x: x.id == id, self.quadruplesList))
 		quad[0].result = cont
 		
@@ -373,16 +463,15 @@ class ruleManager(one_for_allListener):
 	def enterConstant(self, ctx):
 		try: 
 			idName = ctx.id_().getText()
-
-			if idName in self.varDirectory:
-				objVar = self.varDirectory[idName]
-				lst = (idName, objVar.data_type)
+			print(idName)
+			#Verify that the name exists in the variable table
+			if self.varDirectory.checkVariable(idName):
+				variable = self.varDirectory.getAddressVariable(idName)
+				lst = ('&'+str(variable.id), variable.data_type)
 				self.opdStack.append(lst)
-
-				#print("EVALUATE ID:", lst)
 			else:
-				print("Error, variable not found")
-				sys.exit()
+				self.error.definition(self.error.VARIABLE_NOT_FOUND, idName)
+
 		except:
 			pass
 
@@ -433,8 +522,7 @@ class ruleManager(one_for_allListener):
 			exp_type = result[1]
 			value = result[0]
 			if exp_type is not 'bool':
-				print("Error: type mismatch if")
-				sys.exit()
+				self.error.definition(self.error.TYPE_MISMATCH, 'IF', exp_type)
 			else:
 				self.generatesQuadruple('GotoF', value, None, None)
 				self.jumpStack.append(('IF',self.counter - 1))
@@ -444,7 +532,7 @@ class ruleManager(one_for_allListener):
 	def enterNeuro_endif(self, ctx):
 		try:
 			endif = self.jumpStack.pop()[1]
-			self.findQuadruple(endif,self.counter)
+			self.fillQuadruple(endif,self.counter)
 		except:
 			pass
 
@@ -453,7 +541,7 @@ class ruleManager(one_for_allListener):
 			self.generatesQuadruple('Goto', None, None, None)
 			false = self.jumpStack.pop()[1]
 			self.jumpStack.append(('ELSE', self.counter - 1))
-			self.findQuadruple(false, self.counter)
+			self.fillQuadruple(false, self.counter)
 		except:
 			pass
 
@@ -471,15 +559,13 @@ class ruleManager(one_for_allListener):
 			globalVar.printVariable()
 
 	def printFunctions(self):
-		for key, function in self.functionDirectory.items():
+		for key, function in self.funcDirectory.items():
 			#Print information of each function
 			function.printFunction()
 
 	def printQuadruples(self):
-		counter = 1
 		for quadruple in self.quadruplesList:
-			print(quadruple.id, "QUAD", quadruple.opt, quadruple.opd1, quadruple.opd2, quadruple.result)
-			counter += 1
+			print(quadruple.id, quadruple.opt, quadruple.opd1, quadruple.opd2, quadruple.result)
 
 	def createAddVariable(self, name, data_type, dimensions):
 		if self.isPartOfClass:
@@ -501,7 +587,6 @@ class ruleManager(one_for_allListener):
 			newVariable = objVariable(self.addressManager.getVirtualAddress(data_type, 'global'), name, data_type, dimensions)
 			self.addressManager.updateVirtualAddress(data_type, 'global')
 			self.varDirectory.addVariable(newVariable)
-			#self.globalVarsDirectory[name] = newVariable
 			counter = 0
 
 		# Add 1 to counter
@@ -522,9 +607,9 @@ class ruleManager(one_for_allListener):
 		else:
 			# Else, this variable is not associated with a class and we need to create a objFunction object
 			# and add it directly to the function directory
-			newFunction = objFunction(self.IDCounter, name, data_type, params)
-			self.functionDirectory[name] = newFunction
-
+			newFunction = objFunction(self.counter, name, data_type, params, params)
+			self.funcDirectory.addFunction(newFunction)
+			self.funcStack.append([name, data_type])
 		# Add 1 to counter
 		self.IDCounter += 1
 
