@@ -83,6 +83,7 @@ class ruleManager(one_for_allListener):
 
 		#Stack for managing func types for returns 
 		self.funcStack = []
+		self.returnType = None
 		self.parameterStack = []
 		self.FunctionId = None
 	
@@ -329,6 +330,7 @@ class ruleManager(one_for_allListener):
 				pass
 	
 	def exitReturn_expr(self, ctx):
+		print("AAAAAAAAAAAAAAAA")
 		#Get the value of the expression 
 		val = self.opdStack.pop()
 		#Check if the val matches type of the function
@@ -472,13 +474,13 @@ class ruleManager(one_for_allListener):
 				self.counter += 1
 				self.quadruplesList.append(resultCuadruple)
 			else:
-
+				print(operator, left_type, right_type)
 				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
 		elif operator == "PARAM":
 			resultCuadruple = quadruples(self.counter, operator,left[0], None,'&'+ str(result))
 			self.counter += 1
 			self.quadruplesList.append(resultCuadruple)
-		elif operator == "ERA" or operator == "GOSUB":
+		elif operator == "ERA" or operator == "GOSUB" or operator == "RETURN_ASSIGN":
 			resultCuadruple = quadruples(self.counter, operator, None, None,result)
 			self.counter += 1
 			self.quadruplesList.append(resultCuadruple)
@@ -490,7 +492,9 @@ class ruleManager(one_for_allListener):
 				self.counter += 1
 				self.quadruplesList.append(resultCuadruple)
 			else:
+				print(operator, left_type, right_type)
 				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
+				print(left,right)
 
 
 	#Method that retrieves an specific quadruple and modifies its value
@@ -587,6 +591,7 @@ class ruleManager(one_for_allListener):
 	# CODE ACTIONS FOR MODULE CALL
 	def enterEvaluate_function(self, ctx):
 		name = ctx.TOK_ID().getText()
+		print(name)
 		number = ctx.expressions()
 		#Check if the function exists in the function directory
 		if self.funcDirectory.checkFunction(name):
@@ -595,6 +600,7 @@ class ruleManager(one_for_allListener):
 			self.paramStack = function.params
 			if len(self.paramStack) == len(number):
 				self.FunctionId = function.quadId
+				self.returnType = function.data_type
 				self.generatesQuadruple("ERA", None, None, name)
 			else:
 				print("The number of parameters does not match the function")
@@ -613,6 +619,11 @@ class ruleManager(one_for_allListener):
 			self.generatesQuadruple("PARAM", arg, None, new_memory)
 		
 	def exitNeuro_params(self, ctx):
+		#Depending on the return data type, we'll assign a temporal address
+		memory_address = self.addressManager.getVirtualAddress(self.returnType, "temporal")
+		self.addressManager.updateVirtualAddress(self.returnType, "temporal")
+		self.opdStack.append(["&"+ str(memory_address), self.returnType])
+		self.generatesQuadruple("RETURN_ASSIGN", None, None, "&" + str(memory_address))
 		self.generatesQuadruple("GOSUB", None, None, self.FunctionId)
 		#No sé como poner el return para que se iguale al valor de una funcion 
 		#porque no lo puedo meter a la opdStack ya uqe me pide un data_type
@@ -622,10 +633,9 @@ class ruleManager(one_for_allListener):
 		if ctx.expressions is not None:
 			for expr in ctx.expressions():
 				if '"' in expr.getText():
-					print(expr.getText())
+					pass
 				else:
-					print("hola")
-					print(self.opdStack.pop())
+					pass
 
 
 

@@ -22,8 +22,15 @@ function int HelloBtch(var string bitch1, var string nomas, var int hi, var int 
 	return contador;
 }
 
+function float area(var int radio, var int radio2){
+	var float contador = 0.0;
+	contador = 3.14 * radio * radio;
+	return contador;
+}
+
 function string sayGoodbye(var string bitch) {
 	var int contador2 = 0;
+	var float areaCirculo = area(2, 3);
 	var int contador = HelloBtch("pinche", "no mms", 3*4, 5);
 	barbara = 4 * 3 + 8 * 9;
 	drama = "hai";
@@ -34,6 +41,7 @@ function string sayGoodbye(var string bitch) {
 main {
 	var string python = "hello";
 	var int hello = 2, hi = 4, bye = 5;
+	
 
 	var int dyr[2]; 
 	j = (1 * (2 + 4) * 6 + 10) > 50;
