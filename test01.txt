@@ -1,35 +1,7 @@
 program test01;
 
-class salute {
-	public var string hello, yellow, lala;
-	public var int yoyo, hallo; 
-	public var Bye lalo;
-	public function string sayHello(var string hola, var string addios, var int fellow) {
-			write("hello");
-		}
-}
-class farewell : hola {
-	public var int numero;
-	private var string bye;
-	private function string sayGoodbye(var string pivote, var int jaja) {
-			write(perro);
-		}
-}
-var bool j;
-var int barbara;
-var int drink[23 + 1];
-var string drama;
 main {
-	j = (1 * (2 + 4) * 6 + 10) > 50;
-	if(3*2>2) {
-		write("hi");
-	}
-	j = (1 * (2 + 4) * 6 + 10) > 50;
-	if(3 > 2) {
-		barbara = 3 + 2;
-		write("helo");
-	} else {
-		barbara = 3 * 4;
-	}
-	drama = "hola";
+	
+
+	print(((1 * 2 + 3 - 4 / 5 + 6) < 30));
 }

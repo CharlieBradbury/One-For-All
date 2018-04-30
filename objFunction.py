@@ -6,6 +6,7 @@ class objFunction():
 		self.data_type = data_type
 		self.params = params
 		self.tempVars = []
+		self.returnValue = 13
 
 	def printFunction(self):
 		try:

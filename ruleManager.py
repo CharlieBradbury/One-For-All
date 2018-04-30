@@ -1,4 +1,4 @@
-import sys
+''' import sys
 import os
 from antlr4 import *
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -14,6 +14,25 @@ from semanticCube import semanticCube
 from quadruples import quadruples
 from variableDirectory import variableDirectory
 from addressManager import addressManager
+class ruleManager(one_for_allListener):
+'''
+
+import sys
+from antlr4 import *
+sys.path.append('C:\\Users\\dadel\\Desktop\\One-For-All\\parser')
+from one_for_allLexer import one_for_allLexer
+from one_for_allParser import one_for_allParser
+from one_for_allListener import one_for_allListener
+from scopeManager import scopeManager
+from objClass import *
+from objFunction import objFunction
+from objVariable import objVariable
+from collections import OrderedDict
+from semanticCube import semanticCube
+from quadruples import quadruples
+from variableDirectory import variableDirectory
+from addressManager import addressManager
+from virtualMachine import virtualMachine
 class ruleManager(one_for_allListener):
 
 	#------------------------------------------------------
@@ -123,7 +142,6 @@ class ruleManager(one_for_allListener):
 				size = self.opdStack[-1]
 			else:
 				dim = 0
-
 			try:
 				# For each name, create an object variable with such information
 				for var in currentVariables:
@@ -197,11 +215,16 @@ class ruleManager(one_for_allListener):
 		'''
 
 	def exitRestOfProgram(self, ctx):
-		pass
 		self.printQuadruples()
 
-		for key, var in self.varDirectory.directory.items():
-			print(var.printVariable())
+		# Create and run virtual machine
+		vMachine = virtualMachine()
+		vMachine.currentMemory = scopeManager("local")
+		vMachine.executeInstructions(self.quadruplesList)		
+
+
+		#for key, var in self.varDirectory.directory.items():
+		#	print(var.printVariable())
 
 		'''
 		print("--- GLOBAL VARIABLES ---")
@@ -214,16 +237,6 @@ class ruleManager(one_for_allListener):
 	#------------------------------------------------------
 	# QUADRUPLES
 	#------------------------------------------------------	
-
-	def exitAssignment(self,ctx):
-		#Consult name of the variable that its going to be assigned
-		name = ctx.id_().getText()
-		#Verify that the name exists in the variable table
-		if self.varDirectory.checkVariable(name):
-			variable = self.varDirectory.getAddressVariable(name)
-		val = self.opdStack.pop()
-		#Create quadruple
-		self.generatesQuadruple('=',val, variable, None)
 
 	def enterToken_and(self, ctx):
 		self.optStack.append(ctx.getText())
@@ -343,10 +356,11 @@ class ruleManager(one_for_allListener):
 			#TO DO: Modular el siguiente fragmento de codigo
 			temp = self.addressManager.getVirtualAddress('bool','temporal')
 			self.opdStack.append(('&'+str(temp), 'bool'))
-			resultCuadruple = quadruples(self.counter,operator, left, right, '&'+str(temp))
+			resultCuadruple = quadruples(self.counter,operator, left, right, '&'+ str(temp))
 			self.addressManager.updateVirtualAddress(type, 'temporal')
 			self.counter += 1
 			self.quadruplesList.append(resultCuadruple)
+
 		elif operator ==  '=':
 			# Obtains codes from operators and operands
 			operator_code = self.cube.operatorToCode(operator) 
@@ -355,7 +369,7 @@ class ruleManager(one_for_allListener):
 
 			resultType = self.cube.semanticValidation(operator_code, left_code, right_code)
 			if resultType != -1:
-				resultCuadruple = quadruples(self.counter,operator, left[0], None, '&'+str(right.id))
+				resultCuadruple = quadruples(self.counter,operator, left[0], None, '&'+ str(right.id))
 				self.counter += 1
 				self.quadruplesList.append(resultCuadruple)
 			else:
@@ -373,16 +387,15 @@ class ruleManager(one_for_allListener):
 	def enterConstant(self, ctx):
 		try: 
 			idName = ctx.id_().getText()
-
-			if idName in self.varDirectory:
-				objVar = self.varDirectory[idName]
-				lst = (idName, objVar.data_type)
+			#print(idName)
+			#Verify that the name exists in the variable table
+			if self.varDirectory.checkVariable(idName):
+				variable = self.varDirectory.getAddressVariable(idName)
+				lst = ('&'+str(variable.id), variable.data_type)
 				self.opdStack.append(lst)
-
-				#print("EVALUATE ID:", lst)
 			else:
-				print("Error, variable not found")
-				sys.exit()
+				self.error.definition(self.error.VARIABLE_NOT_FOUND, idName)
+
 		except:
 			pass
 
@@ -454,6 +467,39 @@ class ruleManager(one_for_allListener):
 			false = self.jumpStack.pop()[1]
 			self.jumpStack.append(('ELSE', self.counter - 1))
 			self.findQuadruple(false, self.counter)
+		except:
+			pass
+
+	# WHILE STATEMENT
+	def enterNeuro_while_begin(self, ctx):
+		try:
+			self.jumpStack.append(('WHILE', self.counter))
+		except:
+			pass
+
+	def enterNeuro_while_expression(self, ctx):
+		try:
+			result = self.opdStack.pop()
+			exp_type = result[1]
+			value = result[0]
+			if exp_type is not 'bool':
+				print("Error: type mismatch if")
+				sys.exit()
+			else:
+				self.generatesQuadruple('GotoF', value, None, None)
+				self.jumpStack.append(('WHILE',self.counter - 1))
+		except:
+			pass
+
+	def enterNeuro_while_end(self, ctx):
+		try:
+			endJump = self.jumpStack.pop()[1]
+			returnJump = self.jumpStack.pop()[1]
+			
+			self.generatesQuadruple('Goto', None, None, None)
+			self.findQuadruple(self.counter - 1, returnJump)
+
+			self.findQuadruple(endJump, self.counter)
 		except:
 			pass
 
