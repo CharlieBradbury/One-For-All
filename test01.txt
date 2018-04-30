@@ -8,25 +8,28 @@ class salute {
 			write("hello");
 		}
 }
-class farewell : hola {
-	public var int numero;
-	private var string bye;
-	private function string sayGoodbye(var string pivote, var int jaja) {
-
-		}
-}
 
 var bool j;
 var int barbara;
 var int drink[3];
 var string drama;
 
-function string sayGoodbye(var string bitch, var string nomas[2], var int hi[4], var int times[3]) {
+function int HelloBtch(var string bitch1, var string nomas, var int hi, var int times) {
 	var int contador = 0;
+	var string que = nomas;
+	barbara = 4 * 3 + 8 * 9;
+	drama = bitch1;
+	return contador;
+}
+
+function string sayGoodbye(var string bitch) {
+	var int contador2 = 0;
+	var int contador = HelloBtch("pinche", "no mms", 3*4, 5);
 	barbara = 4 * 3 + 8 * 9;
 	drama = "hai";
 	return drama;
 }
+
 
 main {
 	var string python = "hello";
@@ -35,7 +38,7 @@ main {
 	var int dyr[2]; 
 	j = (1 * (2 + 4) * 6 + 10) > 50;
 	if(3*2>2) {
-		write("hi");
+		write("hi", 3*4);
 	}
 	j = (1 * (2 + 4) * 6 + 10) > 50;
 	if(3 > 2) {
@@ -45,4 +48,5 @@ main {
 		barbara = 3 * 4;
 	}
 	drama = "hola";
+	return 0;
 }

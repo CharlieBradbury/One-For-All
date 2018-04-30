@@ -1,4 +1,4 @@
-import sys 
+import sys
 
 class errorHandler():
     #For variables 
@@ -27,8 +27,8 @@ class errorHandler():
             print("Error (" + str(error_type) + ") : Invalid operation", arg1, arg2)
         elif error_type == 6:
             print("Error (" + str(error_type) + ") : Type mismatch", arg1, arg2)
-        sys.exit()
-
+        
+        #raise Exception(error_type)
         
 
 

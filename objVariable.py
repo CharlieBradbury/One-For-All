@@ -7,6 +7,9 @@ class objVariable():
 		self.name = name
 		self.data_type = data_type
 		self.dim = dim
+	
+	def getAddress(self):
+		return self.id
 
 	def printVariable(self):
 		try:

@@ -129,7 +129,7 @@ input_:
     TOK_READ TOK_LPAREN STRING TOK_COMMA TOK_ID TOK_RPAREN TOK_SEMICOLON;
 
 output:
-	TOK_WRITE TOK_LPAREN ((expressions | STRING) (TOK_COMMA)?)+ TOK_RPAREN TOK_SEMICOLON;
+	TOK_WRITE TOK_LPAREN (expressions) (TOK_COMMA)?)+ TOK_RPAREN TOK_SEMICOLON;
 
 condition_else:
     (neuro_else TOK_ELSE block)?;
@@ -231,7 +231,10 @@ evaluate_class:
 	TOK_ID TOK_DOT TOK_ID(TOK_LPAREN expressions TOK_RPAREN)?;
 
 evaluate_function:
-	TOK_ID TOK_LPAREN expressions TOK_RPAREN;
+	TOK_ID TOK_LPAREN (expressions (TOK_COMMA)?)* neuro_params TOK_RPAREN;
+
+neuro_params:
+;
 
 evaluate_array:
 	TOK_ID TOK_LBRACKET expressions TOK_RBRACKET;

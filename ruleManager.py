@@ -52,10 +52,8 @@ class ruleManager(one_for_allListener):
 		# Current class (Type: objClass)
 		self.currentClass = None
 
-		#Scope Manager stack that stores the scopes
-		current_scope = scope("global", None)
-		self.scopeManager = []
-		self.scopeManager.append(current_scope)
+		#Scope for assigning addresses
+		self.currentScope = ("global", None)
 
 		# Boolean to check if reading a class, if reading a method
 		# and if the current var/method is public
@@ -85,6 +83,8 @@ class ruleManager(one_for_allListener):
 
 		#Stack for managing func types for returns 
 		self.funcStack = []
+		self.parameterStack = []
+		self.FunctionId = None
 	
 		#------------------------------------------------------
 		#	CREATE FIRST QUADRUPLE
@@ -99,8 +99,14 @@ class ruleManager(one_for_allListener):
 	#-----------------------------------------------------
 
 	def enterMain(self, ctx):
+		self.currentScope = ("local", "main")
+		#Re-start virtual addresses for the local and temporal scope
+		self.addressManager.restartVirtualAddress()
+		#Create first Goto
 		main = self.jumpStack.pop()[1]
 		self.fillQuadruple(main,self.counter)
+		#Register main function 
+		self.createAddRoutine("main", "int", None)
 
 	def enterClasses(self, ctx):
 		self.isPartOfClass = True
@@ -186,11 +192,22 @@ class ruleManager(one_for_allListener):
 		except:
 			pass
 
+	
+	def exitBlock(self, ctx):
+		# Change context to global 
+		self.currentScope = ("global",None)
+
 
 	def enterRoutine_definition(self, ctx):
 		# Obtain type and name of routine to be created
 		routineName = ctx.TOK_ID().getText()
 		routineType = ctx.data_type().getText()
+
+		# Change context to local 
+		self.currentScope = ("local", routineName)
+
+		#Re-start virtual addresses for the local and temporal scope
+		self.addressManager.restartVirtualAddress()
 
 		# List of parameters
 		routineParameters = []
@@ -201,8 +218,8 @@ class ruleManager(one_for_allListener):
 			paramType =  ctx.parameters().data_type().getText()
 
 			#Create object variable for each parameter, always assume is a non array variable
-			tempParam = objVariable(self.addressManager.getVirtualAddress(paramType,"local"), paramName, paramType,0)
-			self.addressManager.updateVirtualAddress(paramType,"local")
+			tempParam = objVariable(self.addressManager.getVirtualAddress(paramType,self.currentScope[0]), paramName, paramType,0)
+			self.addressManager.updateVirtualAddress(paramType,self.currentScope[0])
 			routineParameters.append(tempParam)
 
 		except:
@@ -217,8 +234,8 @@ class ruleManager(one_for_allListener):
 				paramType = ctx.parameters().parameters_recursive().data_type(countParameters).getText()
 				paramName = ctx.parameters().parameters_recursive().TOK_ID(countParameters).getText()
  				#Always assume is a non array variable
-				tempParam = objVariable(self.addressManager.getVirtualAddress(paramType,"local"), paramName, paramType,0)
-				self.addressManager.updateVirtualAddress(paramType,"local")
+				tempParam = objVariable(self.addressManager.getVirtualAddress(paramType,self.currentScope[0]), paramName, paramType,0)
+				self.addressManager.updateVirtualAddress(paramType,self.currentScope[0])
 				routineParameters.append(tempParam)
 				'''CHECK PARAMETERS NOT WORKING WITH ARRAYS'''
 				countParameters += 1
@@ -232,17 +249,11 @@ class ruleManager(one_for_allListener):
 			print("Error while creating new routine")
 			sys.exit()
 
-	
+	def exitRoutine_definition(self, ctx):
+		pass
+
 	def enterNeuro_array(self, ctx):
 		pass
-		'''param = self.routineParameters.pop()
-		value = self.opdStack.pop()
-		new_paramType = param[0]
-		new_param = param[1]
-		size = value[0]'''
-
-		'''self.routineParameters.append([new_paramType, new_param, size])'''
-
 	
 	def exitClass_definition(self, ctx):
 		# Call method to add finished class to the class directory
@@ -256,20 +267,15 @@ class ruleManager(one_for_allListener):
 		# Reset part of class boolean
 		self.isPartOfClass = False
 
-		'''
-		#print("--- CLASSES ---")
-		#self.printClassDictionary()
-		'''
-
 	def exitRestOfProgram(self, ctx):
-		pass
 		self.printQuadruples()
-
+		print("------GLOBAL VARIABLES-----")
 		for key, var in self.varDirectory.directory.items():
-			print(var.printVariable())
-		
+			var.printVariable()
+		print("--------FUNCTIONS--------")
 		for key, func in self.funcDirectory.directory.items():
 			func.printFunction()
+			func.localVars.printDirectory()
 
 	#------------------------------------------------------
 	# QUADRUPLES
@@ -278,25 +284,49 @@ class ruleManager(one_for_allListener):
 	def exitAssignment(self,ctx):
 		#Consult name of the variable that its going to be assigned
 		name = ctx.id_().getText()
+		#IF IT DOES NOT FIND THE VARIABLE IN LOCAL TRY IN GLOBAL
 		#Verify that the name exists in the variable table
-		if self.varDirectory.checkVariable(name):
-			variable = self.varDirectory.getAddressVariable(name)
-		val = self.opdStack.pop()
-		#Create quadruple
-		self.generatesQuadruple('=',val, variable, None)
-	
+		variable = ''
+		#Verify that the name exists in the variable table
+		try: 
+			if self.currentScope[0] == "local":
+				variables = self.funcDirectory.getAddressFunction(self.currentScope[1])
+				variable = variables.getVariableDirectory().getAddressVariable(name)
+
+			if variable is None or self.currentScope[0] == "global" :
+				variable = self.varDirectory.getAddressVariable(name)
+
+			elif variable is None:
+				self.error.definition(self.error.VARIABLE_NOT_DEFINED, name, None)
+			
+			val = self.opdStack.pop()
+			#Create quadruple
+			self.generatesQuadruple('=',val, variable, None)
+		except:
+			pass
+
 	def exitVariable_assign(self, ctx):
 		#Can declare and assign values to multiple variables
 		while self.variableStack:
 			#Get the name of the variable 
 			name = self.variableStack.pop()
+			variable = ''
 			#Verify that the name exists in the variable table
-			if self.varDirectory.checkVariable(name):
-				variable = self.varDirectory.getAddressVariable(name)
-			#Get the corresponding value of the expression
-			val = self.opdStack.pop()
-			#Create quadruple
-			self.generatesQuadruple('=',val, variable, None)
+			try: 
+				if self.currentScope[0] == "local":
+					variables = self.funcDirectory.getAddressFunction(self.currentScope[1])
+					variable = variables.getVariableDirectory().getAddressVariable(name)
+
+				if variable is None or self.currentScope[0] == "global" :
+					variable = self.varDirectory.getAddressVariable(name)
+
+				elif variable is None:
+					self.error.definition(self.error.VARIABLE_NOT_DEFINED, name, None)
+				val = self.opdStack.pop()
+				#Create quadruple
+				self.generatesQuadruple('=',val, variable, None)
+			except:
+				pass
 	
 	def exitReturn_expr(self, ctx):
 		#Get the value of the expression 
@@ -430,6 +460,7 @@ class ruleManager(one_for_allListener):
 		elif operator ==  '=':
 			left_type = left[1]
 			right_type = right.data_type
+
 			# Obtains codes from operators and operands
 			operator_code = self.cube.operatorToCode(operator) 
 			left_code = self.cube.typeToCode(left_type)
@@ -443,6 +474,14 @@ class ruleManager(one_for_allListener):
 			else:
 
 				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
+		elif operator == "PARAM":
+			resultCuadruple = quadruples(self.counter, operator,left[0], None,'&'+ str(result))
+			self.counter += 1
+			self.quadruplesList.append(resultCuadruple)
+		elif operator == "ERA" or operator == "GOSUB":
+			resultCuadruple = quadruples(self.counter, operator, None, None,result)
+			self.counter += 1
+			self.quadruplesList.append(resultCuadruple)
 		else:
 			left_type = left[1]
 			right_type = right[1]
@@ -459,19 +498,23 @@ class ruleManager(one_for_allListener):
 		quad = list(filter(lambda x: x.id == id, self.quadruplesList))
 		quad[0].result = cont
 		
-	# Enter a parse tree produced by one_for_allParser#id_.
 	def enterConstant(self, ctx):
 		try: 
-			idName = ctx.id_().getText()
-			print(idName)
+			name = ctx.id_().getText()
+			variable = ''
 			#Verify that the name exists in the variable table
-			if self.varDirectory.checkVariable(idName):
-				variable = self.varDirectory.getAddressVariable(idName)
-				lst = ('&'+str(variable.id), variable.data_type)
-				self.opdStack.append(lst)
-			else:
-				self.error.definition(self.error.VARIABLE_NOT_FOUND, idName)
+			if self.currentScope[0] == "local":
+				variables = self.funcDirectory.getAddressFunction(self.currentScope[1])
+				variable = variables.getVariableDirectory().getAddressVariable(name)
 
+			if variable is None or self.currentScope[0] == "global" :
+				variable = self.varDirectory.getAddressVariable(name)
+
+			elif variable is None:
+				self.error.definition(self.error.VARIABLE_NOT_DEFINED, name, None)
+			
+			lst = ('&'+str(variable.id), variable.data_type)
+			self.opdStack.append(lst)
 		except:
 			pass
 
@@ -480,7 +523,6 @@ class ruleManager(one_for_allListener):
 
 			if value is not None:
 				lst = (value, "float")
-				print("EVALUATE FLOAT:", lst)
 				self.opdStack.append(lst)
 		except:
 			pass
@@ -490,7 +532,6 @@ class ruleManager(one_for_allListener):
 
 			if value is not None:
 				lst = (value, "int")
-				#print("EVALUATE INT:", lst)
 				self.opdStack.append(lst)
 		except:
 			pass
@@ -500,7 +541,6 @@ class ruleManager(one_for_allListener):
 
 			if value is not None:
 				lst = (value, "string")
-				#print("EVALUATE STRING:", lst)
 				self.opdStack.append(lst)
 		except:
 			pass
@@ -510,7 +550,6 @@ class ruleManager(one_for_allListener):
 
 			if value is not None:
 				lst = (value, "bool")
-				#print("EVALUATE BOOLEAN:", lst)
 				self.opdStack.append(lst)
 		except:
 			pass
@@ -544,6 +583,52 @@ class ruleManager(one_for_allListener):
 			self.fillQuadruple(false, self.counter)
 		except:
 			pass
+	
+	# CODE ACTIONS FOR MODULE CALL
+	def enterEvaluate_function(self, ctx):
+		name = ctx.TOK_ID().getText()
+		number = ctx.expressions()
+		#Check if the function exists in the function directory
+		if self.funcDirectory.checkFunction(name):
+			#Check that parameters match
+			function = self.funcDirectory.getAddressFunction(name)
+			self.paramStack = function.params
+			if len(self.paramStack) == len(number):
+				self.FunctionId = function.quadId
+				self.generatesQuadruple("ERA", None, None, name)
+			else:
+				print("The number of parameters does not match the function")
+				sys.exit()
+
+	def enterNeuro_params(self, ctx):
+		#Send every parameter 
+		while self.paramStack:
+			param = self.paramStack.pop()
+			arg = self.opdStack.pop()
+			new_memory = param.getAddress()
+			self.verifyParams(arg,param)
+			# Param is the action to send the parameters of a function during 
+			# a module call. The second element is the address of the current value, 
+			# The last element is where the current value is going to be stored.
+			self.generatesQuadruple("PARAM", arg, None, new_memory)
+		
+	def exitNeuro_params(self, ctx):
+		self.generatesQuadruple("GOSUB", None, None, self.FunctionId)
+		#No sé como poner el return para que se iguale al valor de una funcion 
+		#porque no lo puedo meter a la opdStack ya uqe me pide un data_type
+	
+
+	def exitOutput(self, ctx):
+		if ctx.expressions is not None:
+			for expr in ctx.expressions():
+				if '"' in expr.getText():
+					print(expr.getText())
+				else:
+					print("hola")
+					print(self.opdStack.pop())
+
+
+
 
 	#------------------------------------------------------
 	#	AUXILIARY METHODS
@@ -552,11 +637,6 @@ class ruleManager(one_for_allListener):
 		for key, _class in self.classDirectory.items():
 			#Print information of each class
 			_class.printClass()
-
-	def printGlobalVariables(self):
-		for key, globalVar in self.globalVarsDirectory.items():
-			#Print information of each variable
-			globalVar.printVariable()
 
 	def printFunctions(self):
 		for key, function in self.funcDirectory.items():
@@ -584,13 +664,16 @@ class ruleManager(one_for_allListener):
 			# Else, this variable is not associated with a class and we need to create a objVariable object
 			# and add it directly to the global variables directory
 
-			newVariable = objVariable(self.addressManager.getVirtualAddress(data_type, 'global'), name, data_type, dimensions)
-			self.addressManager.updateVirtualAddress(data_type, 'global')
-			self.varDirectory.addVariable(newVariable)
+			newVariable = objVariable(self.addressManager.getVirtualAddress(data_type, self.currentScope[0]), name, data_type, dimensions)
+			self.addressManager.updateVirtualAddress(data_type, self.currentScope[0])
+			if self.currentScope[0] == "global":
+				self.varDirectory.addVariable(newVariable)
+			else:
+				#In case of declaring a variable inside a function
+				func = self.funcDirectory.getAddressFunction(self.currentScope[1])
+				func.localVars.addVariable(newVariable)
+				func.countVars += 1
 			counter = 0
-
-		# Add 1 to counter
-		self.IDCounter += 1
 
 	def createAddRoutine(self, name, data_type, params):
 		if self.isPartOfClass:
@@ -607,11 +690,26 @@ class ruleManager(one_for_allListener):
 		else:
 			# Else, this variable is not associated with a class and we need to create a objFunction object
 			# and add it directly to the function directory
-			newFunction = objFunction(self.counter, name, data_type, params, params)
+
+			newFunction = objFunction(self.counter, name, data_type, params)
+			#Add parameters to the local variable table
+			if params is not None:
+				param_number = len(params)
+				newFunction.countVars = param_number
+				newFunction.localVars.addMultipleVariables(params)
+			#Add new function to the function directory
 			self.funcDirectory.addFunction(newFunction)
+			#For return purposes
 			self.funcStack.append([name, data_type])
 		# Add 1 to counter
 		self.IDCounter += 1
+	
+	def verifyParams(self, argument, parameter):
+		if argument[0] == parameter.name and argument[1] == parameter.data_type:
+			return True
+		else:
+			#Throw error
+			return False
 
 	def createEmptyClass(self, name):
 		# Create new class and assign it to currentClass

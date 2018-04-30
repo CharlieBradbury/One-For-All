@@ -557,6 +557,15 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by one_for_allParser#neuro_params.
+    def enterNeuro_params(self, ctx:one_for_allParser.Neuro_paramsContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_params.
+    def exitNeuro_params(self, ctx:one_for_allParser.Neuro_paramsContext):
+        pass
+
+
     # Enter a parse tree produced by one_for_allParser#evaluate_array.
     def enterEvaluate_array(self, ctx:one_for_allParser.Evaluate_arrayContext):
         pass
