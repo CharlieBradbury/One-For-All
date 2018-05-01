@@ -92,21 +92,19 @@ class virtualMachine():
 			return cleanResult
 		
 	# Receives a value and an address to save that result at
-	def saveResultAt(self, result, address):
+	def saveResultAt(self, result, address):	
 
-		if(address[0] == "&"):
 			# Then its an address, we need to search for it in the proper variable table
 			address = address.replace("&", "")
+			context = self.currentScope.adManager.getMemorySegment(address)[0]
 
-			segmentString = self.currentScope.adManager.getMemorySegment(address)[0]
-
-			if segmentString == "global":
+			if context == "global":
 				# Save the result in global memory
 				self.currentScope.saveResultGlobal(result, address)
-			elif segmentString == "local":
+			elif context == "local":
 				# Save the result in local memory
 				self.currentScope.saveResultLocal(result, address)
-			elif segmentString == "temporal":
+			elif context == "temporal":
 				# Save the result in temporal memory
 				self.currentScope.saveResultTemporal(result, address)
 

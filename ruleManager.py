@@ -116,6 +116,12 @@ class ruleManager(one_for_allListener):
 		self.parameterStack = []
 		self.FunctionId = None
 
+
+	#------------------------------------------------------
+	# 	CLASS, FUNCTIONS AND VARIABLES
+	#-----------------------------------------------------
+
+	def enterMain(self, ctx):
 		#------------------------------------------------------
 		#	CREATE FIRST QUADRUPLE
 		#   Goto to the main method
@@ -123,12 +129,6 @@ class ruleManager(one_for_allListener):
 		self.generatesQuadruple('Goto', None, None, None)
 		self.jumpStack.append(('Main',self.counter - 1))
 
-
-	#------------------------------------------------------
-	# 	CLASS, FUNCTIONS AND VARIABLES
-	#-----------------------------------------------------
-
-	def enterMain(self, ctx):
 		self.currentScope = ("local", "main")
 		#Re-start virtual addresses for the local and temporal scope
 		self.addressManager.restartVirtualAddress()
