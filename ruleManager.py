@@ -129,7 +129,6 @@ class ruleManager(one_for_allListener):
 		self.jumpStack.append(('Main', self.counter - 1))
 
 	def enterMain(self, ctx):
-
 		self.currentScope = ("local", "main")
 		#Re-start virtual addresses for the local and temporal scope
 		self.addressManager.restartVirtualAddress()
