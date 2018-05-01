@@ -1,20 +1,49 @@
+'''
 import sys
-import os
 from antlr4 import *
+from collections import OrderedDict
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from parser.one_for_allLexer import one_for_allLexer
 from parser.one_for_allParser import one_for_allParser
 from parser.one_for_allListener import one_for_allListener
-from scope import scope
-from objClass import *
+
 from objFunction import objFunction
 from objVariable import objVariable
-from collections import OrderedDict
-from semanticCube import semanticCube
-from quadruples import quadruples
+from objClass import *
 from variableDirectory import variableDirectory
 from functionDirectory import functionDirectory
+from classDirectory import classDirectory
+
+
+from quadruples import quadruples
+from semanticCube import semanticCube
+from scopeManager import scopeManager
 from addressManager import addressManager
+from virtualMachine import virtualMachine
+from errorHandler import errorHandler
+'''
+
+import sys
+from antlr4 import *
+from collections import OrderedDict
+sys.path.append('C:\\Users\\dadel\\Desktop\\One-For-All\\parser')
+from one_for_allLexer import one_for_allLexer
+from one_for_allParser import one_for_allParser
+from one_for_allListener import one_for_allListener
+
+from objFunction import objFunction
+from objVariable import objVariable
+from objClass import *
+from variableDirectory import variableDirectory
+from functionDirectory import functionDirectory
+from classDirectory import classDirectory
+
+
+from quadruples import quadruples
+from semanticCube import semanticCube
+from scopeManager import scopeManager
+from addressManager import addressManager
+from virtualMachine import virtualMachine
 from errorHandler import errorHandler
 
 class ruleManager(one_for_allListener):
@@ -60,7 +89,7 @@ class ruleManager(one_for_allListener):
 		self.isPartOfClass = False
 		self.isPublic = False
 
-		#Object that manages errors		
+		#Object that manages errors
 		self.error = errorHandler()
 
 		#------------------------------------------------------
@@ -71,8 +100,8 @@ class ruleManager(one_for_allListener):
 
 		# Operands stack
 		self.opdStack = []
-	
-		# Operators stack 
+
+		# Operators stack
 		self.optStack = []
 
 		# Jumps stack
@@ -81,12 +110,12 @@ class ruleManager(one_for_allListener):
 		#Variable stack for declaring and assigning values
 		self.variableStack = []
 
-		#Stack for managing func types for returns 
+		#Stack for managing func types for returns
 		self.funcStack = []
 		self.returnType = None
 		self.parameterStack = []
 		self.FunctionId = None
-	
+
 		#------------------------------------------------------
 		#	CREATE FIRST QUADRUPLE
 		#   Goto to the main method
@@ -106,7 +135,7 @@ class ruleManager(one_for_allListener):
 		#Create first Goto
 		main = self.jumpStack.pop()[1]
 		self.fillQuadruple(main,self.counter)
-		#Register main function 
+		#Register main function
 		self.createAddRoutine("main", "int", None)
 
 	def enterClasses(self, ctx):
@@ -134,7 +163,7 @@ class ruleManager(one_for_allListener):
 		except:
 			print("Error while reading public token, not possible to know if reading variable or method")
 			sys.exit()
-	  
+
 	def enterClass_private(self, ctx):
 		try:
 			# Setting values of private and class booleans
@@ -161,7 +190,7 @@ class ruleManager(one_for_allListener):
 				# For each name, create an object variable with such information
 				for var in currentVariables:
 					#Create object
-					newVariable = self.createAddVariable(var.getText(), currentType, dim) 
+					newVariable = self.createAddVariable(var.getText(), currentType, dim)
 			except:
 				self.error.definition(self.error.VARIABLE_CREATION, '', '')
 
@@ -185,7 +214,7 @@ class ruleManager(one_for_allListener):
 				# For each name, create an object variable with such information
 				for var in currentVariables:
 					#Create object
-					newVariable = self.createAddVariable(var.getText(), currentType, dim) 
+					newVariable = self.createAddVariable(var.getText(), currentType, dim)
 					self.variableStack.append(var.getText())
 			except:
 				self.error.definition(self.error.VARIABLE_CREATION, '', '')
@@ -193,18 +222,12 @@ class ruleManager(one_for_allListener):
 		except:
 			pass
 
-	
-	def exitBlock(self, ctx):
-		# Change context to global 
-		self.currentScope = ("global",None)
-
-
 	def enterRoutine_definition(self, ctx):
 		# Obtain type and name of routine to be created
 		routineName = ctx.TOK_ID().getText()
 		routineType = ctx.data_type().getText()
 
-		# Change context to local 
+		# Change context to local
 		self.currentScope = ("local", routineName)
 
 		#Re-start virtual addresses for the local and temporal scope
@@ -250,12 +273,13 @@ class ruleManager(one_for_allListener):
 			print("Error while creating new routine")
 			sys.exit()
 
-	def exitRoutine_definition(self, ctx):
-		pass
+	def exitRoutines(self, ctx):
+		# Change context to global
+		self.currentScope = ("global",None)
 
 	def enterNeuro_array(self, ctx):
 		pass
-	
+
 	def exitClass_definition(self, ctx):
 		# Call method to add finished class to the class directory
 		self.addFinishedClass(self.currentClass)
@@ -263,12 +287,13 @@ class ruleManager(one_for_allListener):
 		# Resetting context variables
 		self.isPublic = False
 		self.currentClass = None
-	
+
 	def exitClasses(self, ctx):
 		# Reset part of class boolean
 		self.isPartOfClass = False
 
 	def exitRestOfProgram(self, ctx):
+		self.generatesQuadruple('END',None, None, None)
 		self.printQuadruples()
 		print("------GLOBAL VARIABLES-----")
 		for key, var in self.varDirectory.directory.items():
@@ -278,9 +303,14 @@ class ruleManager(one_for_allListener):
 			func.printFunction()
 			func.localVars.printDirectory()
 
+		# Create and run virtual machine
+		vMachine = virtualMachine()
+		vMachine.currentMemory = scopeManager("local")
+		vMachine.executeInstructions(self.quadruplesList)
+
 	#------------------------------------------------------
 	# QUADRUPLES
-	#------------------------------------------------------	
+	#------------------------------------------------------
 
 	def exitAssignment(self,ctx):
 		#Consult name of the variable that its going to be assigned
@@ -289,17 +319,17 @@ class ruleManager(one_for_allListener):
 		#Verify that the name exists in the variable table
 		variable = ''
 		#Verify that the name exists in the variable table
-		try: 
+		try:
 			if self.currentScope[0] == "local":
 				variables = self.funcDirectory.getAddressFunction(self.currentScope[1])
-				variable = variables.getVariableDirectory().getAddressVariable(name)
+				variable = variables.getVariableDirectory().getVariableByName(name)
 
 			if variable is None or self.currentScope[0] == "global" :
-				variable = self.varDirectory.getAddressVariable(name)
+				variable = self.varDirectory.getVariableByName(name)
 
 			elif variable is None:
 				self.error.definition(self.error.VARIABLE_NOT_DEFINED, name, None)
-			
+
 			val = self.opdStack.pop()
 			#Create quadruple
 			self.generatesQuadruple('=',val, variable, None)
@@ -309,17 +339,17 @@ class ruleManager(one_for_allListener):
 	def exitVariable_assign(self, ctx):
 		#Can declare and assign values to multiple variables
 		while self.variableStack:
-			#Get the name of the variable 
+			#Get the name of the variable
 			name = self.variableStack.pop()
 			variable = ''
 			#Verify that the name exists in the variable table
-			try: 
+			try:
 				if self.currentScope[0] == "local":
 					variables = self.funcDirectory.getAddressFunction(self.currentScope[1])
-					variable = variables.getVariableDirectory().getAddressVariable(name)
+					variable = variables.getVariableDirectory().getVariableByName(name)
 
 				if variable is None or self.currentScope[0] == "global" :
-					variable = self.varDirectory.getAddressVariable(name)
+					variable = self.varDirectory.getVariableByName(name)
 
 				elif variable is None:
 					self.error.definition(self.error.VARIABLE_NOT_DEFINED, name, None)
@@ -328,10 +358,9 @@ class ruleManager(one_for_allListener):
 				self.generatesQuadruple('=',val, variable, None)
 			except:
 				pass
-	
+
 	def exitReturn_expr(self, ctx):
-		print("AAAAAAAAAAAAAAAA")
-		#Get the value of the expression 
+		#Get the value of the expression
 		val = self.opdStack.pop()
 		#Check if the val matches type of the function
 		function = self.funcStack.pop()
@@ -365,10 +394,10 @@ class ruleManager(one_for_allListener):
 
 	def enterToken_plus(self, ctx):
 		self.optStack.append(ctx.getText())
-	
+
 	def enterToken_minus(self, ctx):
 		self.optStack.append(ctx.getText())
-	
+
 	def enterToken_multiplication(self, ctx):
 		self.optStack.append(ctx.getText())
 
@@ -404,7 +433,7 @@ class ruleManager(one_for_allListener):
 		if self.validateStacks():
 			if self.checkOperatorsOnStack(["*", "/"]):
 				self.generateQuadruple()
-				
+
 	def validateStacks(self):
 		return (len(self.optStack) > 0 and len(self.opdStack) > 0)
 
@@ -426,71 +455,74 @@ class ruleManager(one_for_allListener):
 				right_type = right_tuple[1]
 
 				# Obtains codes from operators and operands
-				operator_code = self.cube.operatorToCode(operator) 
+				operator_code = self.cube.operatorToCode(operator)
 				left_code = self.cube.typeToCode(left_type)
 				right_code = self.cube.typeToCode(right_type)
-				
+
 				resultType = self.cube.semanticValidation(operator_code, left_code, right_code)
 
 				# Display result
-				if resultType != -1:	
+				if resultType != -1:
 					for key, value in self.cube.dicTypes.items():
 						if resultType == value:
 							resultName = key
 
 					temp = self.addressManager.getVirtualAddress(resultName,"temporal")
 					self.opdStack.append(('&'+str(temp), resultName))
-					resultCuadruple = quadruples(self.counter,operator, left_name, right_name, '&'+str(temp))
+					resultQuadruple = quadruples(self.counter,operator, left_name, right_name, '&'+str(temp))
 					self.addressManager.updateVirtualAddress(resultName, "temporal")
 
 					self.counter += 1
-					self.quadruplesList.append(resultCuadruple)
+					self.quadruplesList.append(resultQuadruple)
 
 				else:
 					self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
 
 	#Method that generates quadruples for conditionals, loops, assignments, classes and functions
 	def generatesQuadruple(self, operator, left, right, result):
-		if operator == 'GotoF' or operator == 'Goto':
+		if operator == 'END':
+			resultQuadruple = quadruples(self.counter, 'END', None, None, None)
+			self.quadruplesList.append(resultQuadruple)
+		elif operator == 'GotoF' or operator == 'Goto':
 			#TO DO: Modular el siguiente fragmento de codigo
 			temp = self.addressManager.getVirtualAddress('bool','temporal')
 			self.opdStack.append(('&'+str(temp), 'bool'))
-			resultCuadruple = quadruples(self.counter,operator, left, right, '&'+str(temp))
+			resultQuadruple = quadruples(self.counter,operator, left, right, '&'+str(temp))
 			self.addressManager.updateVirtualAddress(type, 'temporal')
 			self.counter += 1
-			self.quadruplesList.append(resultCuadruple)
+			self.quadruplesList.append(resultQuadruple)
 		elif operator ==  '=':
 			left_type = left[1]
 			right_type = right.data_type
 
 			# Obtains codes from operators and operands
-			operator_code = self.cube.operatorToCode(operator) 
+			operator_code = self.cube.operatorToCode(operator)
 			left_code = self.cube.typeToCode(left_type)
 			right_code = self.cube.typeToCode(right_type)
 			resultType = self.cube.semanticValidation(operator_code, left_code, right_code)
 
 			if resultType != -1:
-				resultCuadruple = quadruples(self.counter,operator, left[0], None, '&'+str(right.id))
+				resultQuadruple = quadruples(self.counter,operator, left[0], None, '&'+str(right.id))
 				self.counter += 1
-				self.quadruplesList.append(resultCuadruple)
+				self.quadruplesList.append(resultQuadruple)
 			else:
 				print(operator, left_type, right_type)
 				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
 		elif operator == "PARAM":
-			resultCuadruple = quadruples(self.counter, operator,left[0], None,'&'+ str(result))
+			resultQuadruple = quadruples(self.counter, operator,left[0], None,'&'+ str(result))
 			self.counter += 1
-			self.quadruplesList.append(resultCuadruple)
+			self.quadruplesList.append(resultQuadruple)
 		elif operator == "ERA" or operator == "GOSUB" or operator == "RETURN_ASSIGN":
-			resultCuadruple = quadruples(self.counter, operator, None, None,result)
+			resultQuadruple = quadruples(self.counter, operator, None, None,result)
 			self.counter += 1
-			self.quadruplesList.append(resultCuadruple)
+			self.quadruplesList.append(resultQuadruple)
 		else:
 			left_type = left[1]
 			right_type = right[1]
 			if left_type == right_type:
-				resultCuadruple = quadruples(self.counter,operator, None, None, left[0])
+				resultQuadruple = quadruples(self.counter,operator, None, None, left[0])
 				self.counter += 1
-				self.quadruplesList.append(resultCuadruple)
+				self.quadruplesList.append(resultQuadruple)
 			else:
 				print(operator, left_type, right_type)
 				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
@@ -501,28 +533,28 @@ class ruleManager(one_for_allListener):
 	def fillQuadruple(self, id, cont):
 		quad = list(filter(lambda x: x.id == id, self.quadruplesList))
 		quad[0].result = cont
-		
+
 	def enterConstant(self, ctx):
-		try: 
+		try:
 			name = ctx.id_().getText()
 			variable = ''
 			#Verify that the name exists in the variable table
 			if self.currentScope[0] == "local":
 				variables = self.funcDirectory.getAddressFunction(self.currentScope[1])
-				variable = variables.getVariableDirectory().getAddressVariable(name)
+				variable = variables.getVariableDirectory().getVariableByName(name)
 
 			if variable is None or self.currentScope[0] == "global" :
-				variable = self.varDirectory.getAddressVariable(name)
+				variable = self.varDirectory.getVariableByName(name)
 
 			elif variable is None:
 				self.error.definition(self.error.VARIABLE_NOT_DEFINED, name, None)
-			
+
 			lst = ('&'+str(variable.id), variable.data_type)
 			self.opdStack.append(lst)
 		except:
 			pass
 
-		try: 
+		try:
 			value = ctx.FLOAT().getText()
 
 			if value is not None:
@@ -531,7 +563,7 @@ class ruleManager(one_for_allListener):
 		except:
 			pass
 
-		try: 
+		try:
 			value = ctx.INT().getText()
 
 			if value is not None:
@@ -540,7 +572,7 @@ class ruleManager(one_for_allListener):
 		except:
 			pass
 
-		try: 
+		try:
 			value = ctx.STRING().getText()
 
 			if value is not None:
@@ -549,7 +581,7 @@ class ruleManager(one_for_allListener):
 		except:
 			pass
 
-		try: 
+		try:
 			value = ctx.BOOLEAN().getText()
 
 			if value is not None:
@@ -571,7 +603,7 @@ class ruleManager(one_for_allListener):
 				self.jumpStack.append(('IF',self.counter - 1))
 		except:
 			pass
-	
+
 	def enterNeuro_endif(self, ctx):
 		try:
 			endif = self.jumpStack.pop()[1]
@@ -579,7 +611,7 @@ class ruleManager(one_for_allListener):
 		except:
 			pass
 
-	def enterNeuro_else(self, ctx):	
+	def enterNeuro_else(self, ctx):
 		try:
 			self.generatesQuadruple('Goto', None, None, None)
 			false = self.jumpStack.pop()[1]
@@ -587,7 +619,40 @@ class ruleManager(one_for_allListener):
 			self.fillQuadruple(false, self.counter)
 		except:
 			pass
-	
+
+	# WHILE STATEMENT
+	def enterNeuro_while_begin(self, ctx):
+		try:
+			self.jumpStack.append(('WHILE', self.counter))
+		except:
+			pass
+
+	def enterNeuro_while_expression(self, ctx):
+		try:
+			result = self.opdStack.pop()
+			exp_type = result[1]
+			value = result[0]
+			if exp_type is not 'bool':
+				print("Error: type mismatch if")
+				sys.exit()
+			else:
+				self.generatesQuadruple('GotoF', value, None, None)
+				self.jumpStack.append(('WHILE',self.counter - 1))
+		except:
+			pass
+
+	def enterNeuro_while_end(self, ctx):
+		try:
+			endJump = self.jumpStack.pop()[1]
+			returnJump = self.jumpStack.pop()[1]
+
+			self.generatesQuadruple('Goto', None, None, None)
+			self.fillQuadruple(self.counter - 1, returnJump)
+
+			self.fillQuadruple(endJump, self.counter)
+		except:
+			pass
+
 	# CODE ACTIONS FOR MODULE CALL
 	def enterEvaluate_function(self, ctx):
 		name = ctx.TOK_ID().getText()
@@ -597,8 +662,8 @@ class ruleManager(one_for_allListener):
 		if self.funcDirectory.checkFunction(name):
 			#Check that parameters match
 			function = self.funcDirectory.getAddressFunction(name)
-			self.paramStack = function.params
-			if len(self.paramStack) == len(number):
+			self.parameterStack = function.params
+			if len(self.parameterStack) == len(number):
 				self.FunctionId = function.quadId
 				self.returnType = function.data_type
 				self.generatesQuadruple("ERA", None, None, name)
@@ -607,17 +672,17 @@ class ruleManager(one_for_allListener):
 				sys.exit()
 
 	def enterNeuro_params(self, ctx):
-		#Send every parameter 
-		while self.paramStack:
-			param = self.paramStack.pop()
+		#Send every parameter
+		while self.parameterStack:
+			param = self.parameterStack.pop()
 			arg = self.opdStack.pop()
-			new_memory = param.getAddress()
+			new_memory = param.id
 			self.verifyParams(arg,param)
-			# Param is the action to send the parameters of a function during 
-			# a module call. The second element is the address of the current value, 
+			# Param is the action to send the parameters of a function during
+			# a module call. The second element is the address of the current value,
 			# The last element is where the current value is going to be stored.
 			self.generatesQuadruple("PARAM", arg, None, new_memory)
-		
+
 	def exitNeuro_params(self, ctx):
 		#Depending on the return data type, we'll assign a temporal address
 		memory_address = self.addressManager.getVirtualAddress(self.returnType, "temporal")
@@ -625,9 +690,9 @@ class ruleManager(one_for_allListener):
 		self.opdStack.append(["&"+ str(memory_address), self.returnType])
 		self.generatesQuadruple("RETURN_ASSIGN", None, None, "&" + str(memory_address))
 		self.generatesQuadruple("GOSUB", None, None, self.FunctionId)
-		#No sé como poner el return para que se iguale al valor de una funcion 
+		#No sé como poner el return para que se iguale al valor de una funcion
 		#porque no lo puedo meter a la opdStack ya uqe me pide un data_type
-	
+
 
 	def exitOutput(self, ctx):
 		if ctx.expressions is not None:
@@ -662,7 +727,7 @@ class ruleManager(one_for_allListener):
 			# Set current privacy of the group of variables
 			currentPrivacy = "public" if self.isPublic else "private"
 
-			# If this is part of a class, then create an objVariable_Class object 
+			# If this is part of a class, then create an objVariable_Class object
 			newClassVariable = objVariable_Class(self.IDCounter, name, data_type, currentPrivacy)
 
 			# Add it calling the corresponding method depending if it is a public or global variable
@@ -690,7 +755,7 @@ class ruleManager(one_for_allListener):
 			# Set current privacy of the group of variables
 			currentPrivacy = "public" if self.isPublic else "private"
 
-			# If this is part of a class, then create an objMethod object 
+			# If this is part of a class, then create an objMethod object
 			newMethod = objMethod(self.IDCounter, name, data_type, params, currentPrivacy)
 
 			if currentPrivacy:
@@ -713,7 +778,7 @@ class ruleManager(one_for_allListener):
 			self.funcStack.append([name, data_type])
 		# Add 1 to counter
 		self.IDCounter += 1
-	
+
 	def verifyParams(self, argument, parameter):
 		if argument[0] == parameter.name and argument[1] == parameter.data_type:
 			return True
@@ -725,7 +790,7 @@ class ruleManager(one_for_allListener):
 		# Create new class and assign it to currentClass
 		self.currentClass = objClass(self.IDCounter, name)
 
-		# Add 1 to counter 
+		# Add 1 to counter
 		self.IDCounter += 1
 
 	def addFinishedClass(self, objClass):

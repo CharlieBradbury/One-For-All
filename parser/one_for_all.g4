@@ -123,13 +123,22 @@ neuro_endif:
 ;
 
 loop:
-    TOK_WHILE TOK_LPAREN expressions TOK_RPAREN block;
+    TOK_WHILE neuro_while_begin TOK_LPAREN expressions TOK_RPAREN neuro_while_expression block neuro_while_end;
+
+neuro_while_begin:
+;
+
+neuro_while_expression:
+;
+
+neuro_while_end:
+;
 
 input_:
     TOK_READ TOK_LPAREN STRING TOK_COMMA TOK_ID TOK_RPAREN TOK_SEMICOLON;
 
 output:
-	TOK_WRITE TOK_LPAREN (expressions) (TOK_COMMA)?)+ TOK_RPAREN TOK_SEMICOLON;
+	TOK_WRITE TOK_LPAREN ((expressions) (TOK_COMMA)?)+ TOK_RPAREN TOK_SEMICOLON;
 
 condition_else:
     (neuro_else TOK_ELSE block)?;
