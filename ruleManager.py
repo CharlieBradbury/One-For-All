@@ -1,21 +1,28 @@
+
 import sys
 import os
 from antlr4 import *
+from collections import OrderedDict
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from parser.one_for_allLexer import one_for_allLexer
 from parser.one_for_allParser import one_for_allParser
 from parser.one_for_allListener import one_for_allListener
-from scope import scope
-from objClass import *
+
 from objFunction import objFunction
 from objVariable import objVariable
-from collections import OrderedDict
-from semanticCube import semanticCube
-from quadruples import quadruples
+from objClass import *
 from variableDirectory import variableDirectory
 from functionDirectory import functionDirectory
+from classDirectory import classDirectory
+
+
+from quadruples import quadruples
+from semanticCube import semanticCube
+#from scopeManager import scopeManager
 from addressManager import addressManager
+#from virtualMachine import virtualMachine
 from errorHandler import errorHandler
+
 
 class ruleManager(one_for_allListener):
 
@@ -278,6 +285,11 @@ class ruleManager(one_for_allListener):
 			func.printFunction()
 			func.localVars.printDirectory()
 
+		# Create and run virtual machine
+		#vMachine = virtualMachine()
+		#vMachine.currentMemory = scopeManager("local")
+		#vMachine.executeInstructions(self.quadruplesList)
+
 	#------------------------------------------------------
 	# QUADRUPLES
 	#------------------------------------------------------	
@@ -292,10 +304,10 @@ class ruleManager(one_for_allListener):
 		try: 
 			if self.currentScope[0] == "local":
 				variables = self.funcDirectory.getAddressFunction(self.currentScope[1])
-				variable = variables.getVariableDirectory().getAddressVariable(name)
+				variable = variables.getVariableDirectory().getVariableByName(name)
 
 			if variable is None or self.currentScope[0] == "global" :
-				variable = self.varDirectory.getAddressVariable(name)
+				variable = self.varDirectory.getVariableByName(name)
 
 			elif variable is None:
 				self.error.definition(self.error.VARIABLE_NOT_DEFINED, name, None)
@@ -316,10 +328,10 @@ class ruleManager(one_for_allListener):
 			try: 
 				if self.currentScope[0] == "local":
 					variables = self.funcDirectory.getAddressFunction(self.currentScope[1])
-					variable = variables.getVariableDirectory().getAddressVariable(name)
+					variable = variables.getVariableDirectory().getVariableByName(name)
 
 				if variable is None or self.currentScope[0] == "global" :
-					variable = self.varDirectory.getAddressVariable(name)
+					variable = self.varDirectory.getVariableByName(name)
 
 				elif variable is None:
 					self.error.definition(self.error.VARIABLE_NOT_DEFINED, name, None)
@@ -330,7 +342,6 @@ class ruleManager(one_for_allListener):
 				pass
 	
 	def exitReturn_expr(self, ctx):
-		print("AAAAAAAAAAAAAAAA")
 		#Get the value of the expression 
 		val = self.opdStack.pop()
 		#Check if the val matches type of the function
@@ -509,10 +520,10 @@ class ruleManager(one_for_allListener):
 			#Verify that the name exists in the variable table
 			if self.currentScope[0] == "local":
 				variables = self.funcDirectory.getAddressFunction(self.currentScope[1])
-				variable = variables.getVariableDirectory().getAddressVariable(name)
+				variable = variables.getVariableDirectory().getVariableByName(name)
 
 			if variable is None or self.currentScope[0] == "global" :
-				variable = self.varDirectory.getAddressVariable(name)
+				variable = self.varDirectory.getVariableByName(name)
 
 			elif variable is None:
 				self.error.definition(self.error.VARIABLE_NOT_DEFINED, name, None)
@@ -587,6 +598,39 @@ class ruleManager(one_for_allListener):
 			self.fillQuadruple(false, self.counter)
 		except:
 			pass
+
+	# WHILE STATEMENT
+	def enterNeuro_while_begin(self, ctx):
+		try:
+			self.jumpStack.append(('WHILE', self.counter))
+		except:
+			pass
+
+	def enterNeuro_while_expression(self, ctx):
+		try:
+			result = self.opdStack.pop()
+			exp_type = result[1]
+			value = result[0]
+			if exp_type is not 'bool':
+				print("Error: type mismatch if")
+				sys.exit()
+			else:
+				self.generatesQuadruple('GotoF', value, None, None)
+				self.jumpStack.append(('WHILE',self.counter - 1))
+		except:
+			pass
+
+	def enterNeuro_while_end(self, ctx):
+		try:
+			endJump = self.jumpStack.pop()[1]
+			returnJump = self.jumpStack.pop()[1]
+			
+			self.generatesQuadruple('Goto', None, None, None)
+			self.findQuadruple(self.counter - 1, returnJump)
+
+			self.findQuadruple(endJump, self.counter)
+		except:
+			pass
 	
 	# CODE ACTIONS FOR MODULE CALL
 	def enterEvaluate_function(self, ctx):
@@ -597,8 +641,8 @@ class ruleManager(one_for_allListener):
 		if self.funcDirectory.checkFunction(name):
 			#Check that parameters match
 			function = self.funcDirectory.getAddressFunction(name)
-			self.paramStack = function.params
-			if len(self.paramStack) == len(number):
+			self.parameterStack = function.params
+			if len(self.parameterStack) == len(number):
 				self.FunctionId = function.quadId
 				self.returnType = function.data_type
 				self.generatesQuadruple("ERA", None, None, name)
@@ -608,10 +652,10 @@ class ruleManager(one_for_allListener):
 
 	def enterNeuro_params(self, ctx):
 		#Send every parameter 
-		while self.paramStack:
-			param = self.paramStack.pop()
+		while self.parameterStack:
+			param = self.parameterStack.pop()
 			arg = self.opdStack.pop()
-			new_memory = param.getAddress()
+			new_memory = param.id
 			self.verifyParams(arg,param)
 			# Param is the action to send the parameters of a function during 
 			# a module call. The second element is the address of the current value, 

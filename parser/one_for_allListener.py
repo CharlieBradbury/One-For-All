@@ -233,6 +233,33 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by one_for_allParser#neuro_while_begin.
+    def enterNeuro_while_begin(self, ctx:one_for_allParser.Neuro_while_beginContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_while_begin.
+    def exitNeuro_while_begin(self, ctx:one_for_allParser.Neuro_while_beginContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#neuro_while_expression.
+    def enterNeuro_while_expression(self, ctx:one_for_allParser.Neuro_while_expressionContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_while_expression.
+    def exitNeuro_while_expression(self, ctx:one_for_allParser.Neuro_while_expressionContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#neuro_while_end.
+    def enterNeuro_while_end(self, ctx:one_for_allParser.Neuro_while_endContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_while_end.
+    def exitNeuro_while_end(self, ctx:one_for_allParser.Neuro_while_endContext):
+        pass
+
+
     # Enter a parse tree produced by one_for_allParser#input_.
     def enterInput_(self, ctx:one_for_allParser.Input_Context):
         pass
