@@ -1,4 +1,6 @@
 from addressManager import addressManager
+from scopeManager import scopeManager
+import copy
 
 class virtualMachine():
 	def __init__(self):
@@ -15,6 +17,13 @@ class virtualMachine():
 
 		# For managing jumps caused by goto, gotof, gosub and return
 		self.jumpStack = []
+		# For managing parameters to be returned in routines
+		self.returnStack = []
+
+		self.jumpReturnStack = []
+
+		# For managing multipe contexts
+		self.contextStack = []
 
 	def parseVariable(self, variable):
 		variableType = variable.data_type;
@@ -35,7 +44,7 @@ class virtualMachine():
 	# Parse a constant (in string form from quadruple) into an actual value
 	# of type. Result address and operator are used as extra info in trying to determine
 	# the value of constantString, specially in the case of relational comparitions
-	def parseConstant(self, constantString, resultAddress, operator):
+	def parseConstantWithOperator(self, constantString, resultAddress, operator):
 		parsedValue = None
 
 		if constantString[0] == "\"":
@@ -63,6 +72,26 @@ class virtualMachine():
 
 		return parsedValue
 
+	def parseConstant(self, constantString, resultAddress):
+		parsedValue = None
+
+		if constantString[0] == "\"":
+			# Then is a string
+			parseValue = constantString
+		else:
+			# Get type of operator and of the result (based on its address number)
+			resultType = self.adManager.getMemorySegment(resultAddress.replace("&", ""))[1]
+
+			if resultType == "int":
+				parsedValue = int(constantString)
+			elif resultType == "float":
+				parsedValue = float(constantString)
+			elif resultType == "boolean":
+				if constantString in ["True", "False"]:
+					parsedValue = (constantString == "True")
+
+		return parsedValue
+
 	# Value that receives as parameter an address (identified with an &) or a
 	# constant (without &) and returns its value. If receives a constant, it just returns
 	# such value. If it receives an address, it searchs for the value of that address
@@ -86,9 +115,13 @@ class virtualMachine():
 				# Search for that id in temporalMemory
 				foundVariable = self.currentScope.searchTemporalAddress(address)
 			return foundVariable
-		else:
+		elif operator is not None:
 			# If not, then is a constant and we can return such value
-			cleanResult = self.parseConstant(constantOrAddress, resultAddress, operator)
+			cleanResult = self.parseConstantWithOperator(constantOrAddress, resultAddress, operator)
+			return cleanResult
+		else:
+
+			cleanResult = self.parseConstant(constantOrAddress, resultAddress)
 			return cleanResult
 		
 	# Receives a value and an address to save that result at
@@ -120,6 +153,8 @@ class virtualMachine():
 			rightOpd = exeQuadruple.opd2
 			operator = exeQuadruple.opt
 			resultAddress = exeQuadruple.result
+
+
 
 			# ASSIGNMENT OPERATOR
 			if operator == '=':
@@ -191,24 +226,81 @@ class virtualMachine():
 				self.saveResultAt(leftValue or rightValue, resultAddress)
 			# CONDITIONAL OPERATORS
 			elif operator == 'Goto':
-				# Save the quad that we need to comeback later (which is the current + 1)
-				self.jumpStack.append(self.counterQuad);
 				# Change the current counterQuad to the resultAddress - 1, which in this case is
 				# just a number of quadruple. (E.g. 64). Compensate because of increment at the end.
 				self.counterQuad = resultAddress - 1
-			elif operator == 'GotoF':
-				# Retrieve value at leftoperator and check if its true
+			elif operator == 'GotoF':	
+
 				leftValue = self.getValueAt(leftOpd)
+				
 				# Change the current counterQuad to the resultAddress only is is false
-				if not leftValue:
+				if leftValue is False:
 					self.counterQuad = resultAddress - 1
 			elif operator == 'END':
 				pass
+			# MODULE OPERATORS
+			elif operator == 'ERA':
+				# Save current context
+				self.contextStack.append(self.currentScope)
+
+				# Create new context
+				self.currentScope = scopeManager("local")
+			elif operator == 'PARAM':
+
+				# The adress here is the adress in which we need to save the leftValue
+				# However, first we need to search the leftoperand in the previous context
+				contextToComeback = copy.copy(self.currentScope)
+				previousContext = copy.copy(self.contextStack[-1])
+
+				# Search for that value in previous context
+				self.currentScope = previousContext
+				# We pass resultAdress just as reference
+				leftValue = self.getValueAt(leftOpd, resultAddress)
+
+				# Change context again and save it in this context
+				self.currentScope = contextToComeback
+				self.saveResultAt(leftValue, resultAddress)
+			elif operator == 'RETURN_ASSIGN':
+				# Save address in which we will save, this address corresponds
+				# to the context that called the function
+				self.returnStack.append(resultAddress)
+			elif operator == 'GOSUB':
+				# Save the quad that we need to comeback later (which is the current)
+				self.jumpReturnStack.append(self.counterQuad);
+				# Change quad to the jump
+				self.counterQuad = resultAddress - 1
+
+			elif operator == 'RETURN':
+				# First, we need to obtain where to save
+				whereToSaveResult = self.returnStack.pop()	
+
+				# We obtain the value of the current function
+				resultOfFunction = self.getValueAt(resultAddress, whereToSaveResult)
+
+
+				# Then we change context
+				previousScope = self.contextStack.pop()
+				self.currentScope = previousScope
+
+				# After changing context, we assign the result
+				self.saveResultAt(resultOfFunction, whereToSaveResult)
+
+				# Then, we can move the pointer back to where we were
+				previousPointer = self.jumpReturnStack.pop()
+				self.counterQuad = previousPointer
+
 
 			# Increase counter by 1
 			self.counterQuad += 1
 
 		# Print result at last quadruple
-		print("solo funciona para test01.txt porque abajo hardcodeo el acceso a la temporal")
 		finalResult = self.getValueAt('&11000', '&11000')
-		print("FINAL RESULT:", lastAddress, finalResult)
+		print("FINAL RESULT:", lastAddress, finalResult, self.currentScope.scopeName)
+
+	def printMemory(self):
+		print("GLOBAL MEMORY")
+		self.currentScope.globalMemory.printDirectory()
+		print("LOCAL MEMORY")
+		self.currentScope.localMemory.printDirectory()
+		print("TEMPORAL MEMORY")
+		self.currentScope.temporalMemory.printDirectory()
