@@ -26,7 +26,6 @@ from errorHandler import errorHandler
 import sys
 from antlr4 import *
 from collections import OrderedDict
-sys.path.append('C:\\Users\\dadel\\Desktop\\One-For-All\\parser')
 from one_for_allLexer import one_for_allLexer
 from one_for_allParser import one_for_allParser
 from one_for_allListener import one_for_allListener
@@ -121,13 +120,15 @@ class ruleManager(one_for_allListener):
 	# 	CLASS, FUNCTIONS AND VARIABLES
 	#-----------------------------------------------------
 
-	def enterMain(self, ctx):
+	def enterNeuro_jump_main(self, ctx):
 		#------------------------------------------------------
 		#	CREATE FIRST QUADRUPLE
 		#   Goto to the main method
 		#-----------------------------------------------------
 		self.generatesQuadruple('Goto', None, None, None)
-		self.jumpStack.append(('Main',self.counter - 1))
+		self.jumpStack.append(('Main', self.counter - 1))
+
+	def enterMain(self, ctx):
 
 		self.currentScope = ("local", "main")
 		#Re-start virtual addresses for the local and temporal scope
@@ -306,7 +307,7 @@ class ruleManager(one_for_allListener):
 
 		# Create and run virtual machine
 		vMachine = virtualMachine()
-		vMachine.currentScope = scopeManager("global")
+		vMachine.currentScope = scopeManager("local")
 		vMachine.executeInstructions(self.quadruplesList)
 
 	#------------------------------------------------------
@@ -360,18 +361,20 @@ class ruleManager(one_for_allListener):
 			except:
 				pass
 
+	def exitRoutine_definition(self, ctx):
+		#Check if the val matches type of the function
+		function = self.funcStack.pop()
+
 	def exitReturn_expr(self, ctx):
 		#Get the value of the expression
 		val = self.opdStack.pop()
-		#Check if the val matches type of the function
-		function = self.funcStack.pop()
-		#Generate quadruple
-		self.generatesQuadruple('RETURN',val, function, None)
 
+		#Generate quadruple
+		self.generatesQuadruple('RETURN', None, None, val)
 
 	def enterToken_and(self, ctx):
 		self.optStack.append(ctx.getText())
-
+		
 	def enterToken_or(self, ctx):
 		self.optStack.append(ctx.getText())
 
@@ -513,8 +516,23 @@ class ruleManager(one_for_allListener):
 			resultQuadruple = quadruples(self.counter, operator,left[0], None,'&'+ str(result))
 			self.counter += 1
 			self.quadruplesList.append(resultQuadruple)
-		elif operator == "ERA" or operator == "GOSUB" or operator == "RETURN_ASSIGN":
+		elif operator == "ERA":
 			resultQuadruple = quadruples(self.counter, operator, None, None,result)
+			self.counter += 1
+			self.quadruplesList.append(resultQuadruple)
+
+			# Search for that function in directory and push it to stack
+			retrievedFunction = self.funcDirectory.getAddressFunction(result)
+			formattedFunction = [retrievedFunction.name, retrievedFunction.data_type]
+
+			self.funcStack.append(formattedFunction)
+
+		elif operator == "GOSUB" or operator == "RETURN_ASSIGN":
+			resultQuadruple = quadruples(self.counter, operator, None, None,result)
+			self.counter += 1
+			self.quadruplesList.append(resultQuadruple)
+		elif operator == 'RETURN':
+			resultQuadruple = quadruples(self.counter, operator, None, None,result[0])
 			self.counter += 1
 			self.quadruplesList.append(resultQuadruple)
 		else:
@@ -663,12 +681,23 @@ class ruleManager(one_for_allListener):
 		if self.funcDirectory.checkFunction(name):
 			#Check that parameters match
 			function = self.funcDirectory.getAddressFunction(name)
-			self.parameterStack = function.params
+
+			copyParamStack = []
+			for param in function.params:
+				copyParamStack.append(param)
+
+			self.parameterStack = copyParamStack
+
 			if len(self.parameterStack) == len(number):
 				self.FunctionId = function.quadId
 				self.returnType = function.data_type
 				self.generatesQuadruple("ERA", None, None, name)
+
+				# Search for that function in directory and push it to stack
+				formattedFunction = [function.name, function.data_type]
+				self.funcStack.append(formattedFunction)
 			else:
+
 				print("The number of parameters does not match the function")
 				sys.exit()
 

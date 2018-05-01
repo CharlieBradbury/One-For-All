@@ -12,7 +12,6 @@ from ruleManager import ruleManager
 import sys
 import os
 from antlr4 import *
-sys.path.append('C:\\Users\\dadel\\Desktop\\One-For-All\\parser')
 from one_for_allLexer import one_for_allLexer
 from one_for_allParser import one_for_allParser
 from one_for_allListener import one_for_allListener
@@ -29,7 +28,6 @@ def main(argv):
 	walker = ParseTreeWalker()
 	oneforAll = ruleManager()
 	walker.walk(oneforAll, tree)
-    
 
 if __name__ == '__main__':
 	main(sys.argv)
