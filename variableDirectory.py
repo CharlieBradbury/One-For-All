@@ -1,56 +1,53 @@
-from objVariable import objVariable
-from objClass import objVariable_Class
+from objVariable import objVariable 
 from errorHandler import errorHandler
 import sys
 
-# Directory of variables, works for both normal variables and class variables
 class variableDirectory:
     def __init__(self):
         self.directory = dict()
         self.error = errorHandler()
     
     # Returns a boolean indicating if a variable with such ID exists in the dictionary
-    def checkVariableById(self, variable_id):
-        return (self.directory.get(variable_id, None) is not None)
+    def checkVariableById(self, var_id):
+        return (self.directory.get(var_id, None) is not None)
 
     # Returns a boolean indicating in a variable with such Name exists in the dictionary
-    def checkVariableByName(self, variable_name):
+    def checkVariableByName(self, var_name):
         for key, variable in self.directory.items():
-            if variable.name == variable_name:
+            if variable.name == var_name:
                 return True
         return False
 
     # Returns a variable with the ID given as parameter
     # If it wasn't found, it returns an error
-    def getVariableById(self, variable_id):
+    def getVariableById(self, var_id):
         try:
-            return self.directory.get(variable_id, None)
+            return self.directory.get(var_id, None)
         except:
-            self.error.definition(self.error.VARIABLE_NOT_DEFINED, variable_id, None)
+            self.error.definition(self.error.VARIABLE_NOT_DEFINED, var_id, None)
 
     # Returns a variable with the name given as parameter
     # If it wasn't found, it returns an error
-    def getVariableByName(self, variable_name):
+    def getVariableByName(self, var_name):
         for key, variable in self.directory.items():
-            if variable.name == variable_name:
+            if variable.name == var_name:
                 return variable
-        self.error.definition(self.error.VARIABLE_NOT_DEFINED, variable_name, None)
-
-    # Return size of current directory
-    def getSize(self):
-        return len(self.directory)
 
     # Receives a variable as parameter and tries to add it to the directory
     # If it cannot be added, it displays an error
     def addVariable(self, variable):
         if self.directory.get(variable.id, None) is None:
             self.directory[variable.id] = variable
-        else:
-            self.error.definition(self.error.DUPLICATED_VARIABLE, variable.id, None)
-
-    #Receives a variable id and tries to delete it from the dictionary
-    def deleteVariable(self, variable_id):
+    
+    #Method that adds multiple variable objects list to the directory
+    def addMultipleVariables (self, variables):
         try:
-            del self.directory[variable_id]
+            for var in variables:
+                if self.checkVariableByName(var.name) is False:
+                    self.directory[var.id] = var
         except:
-            self.error.definition(self.error.VARIABLE_NOT_DELETED, variable_id, None)
+            pass
+            
+    def printDirectory(self):
+        for key,var in self.directory.items():
+            var.printVariable()

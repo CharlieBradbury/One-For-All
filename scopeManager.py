@@ -6,7 +6,7 @@ from addressManager import addressManager
 from objVariable import objVariable
 
 from variableDirectory import variableDirectory
-from routineDirectory import routineDirectory
+from functionDirectory import functionDirectory
 from classDirectory import classDirectory
 
 # Element of the memory, which is the parent and the directories
@@ -18,7 +18,7 @@ class scopeManager():
 
 		# Variables, rotuines and class directories
 		self.variableDirectory = variableDirectory()
-		self.routineDirectory = routineDirectory()
+		self.functionDirectory = functionDirectory()
 		self.classDirectory = classDirectory()
 
 		#Temporal memory

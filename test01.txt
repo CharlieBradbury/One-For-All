@@ -1,7 +1,5 @@
 program test01;
 
 main {
-	
-
-	print(((1 * 2 + 3 - 4 / 5 + 6) < 30));
+	var a = 10 * 10;
 }

@@ -183,3 +183,17 @@ class addressManager():
 			typeOperator = "logical"
 
 		return typeOperator
+
+	#Method that restarts counter for the local and temporal addresses 
+	# every time it enters to a new function 
+	def restartVirtualAddress(self):
+		self.COUNTER_TEMPORALS_INT = self.TEMPORALS_INT
+		self.COUNTER_TEMPORALS_FLOAT = self.TEMPORALS_FLOAT
+		self.COUNTER_TEMPORALS_BOOLEAN = self.TEMPORALS_BOOLEAN
+		self.COUNTER_TEMPORALS_STRING = self.TEMPORALS_STRING
+		self.COUNTER_TEMPORALS_OBJECT = self.TEMPORALS_OBJECT
+		self.COUNTER_LOCALS_INT = self.LOCALS_INT
+		self.COUNTER_LOCALS_FLOAT = self.LOCALS_FLOAT
+		self.COUNTER_LOCALS_BOOLEAN = self.LOCALS_BOOLEAN
+		self.COUNTER_LOCALS_STRING = self.LOCALS_STRING
+		self.COUNTER_LOCALS_OBJECT = self.LOCALS_OBJECT

@@ -1,4 +1,4 @@
-program test01;
+program test02;
 
 class salute {
 	public var string hello, yellow, lala;
@@ -8,21 +8,45 @@ class salute {
 			write("hello");
 		}
 }
-class farewell : hola {
-	public var int numero;
-	private var string bye;
-	private function string sayGoodbye(var string pivote, var int jaja) {
-			write(perro);
-		}
-}
+
 var bool j;
 var int barbara;
-var int drink[23 + 1];
+var int drink[3];
 var string drama;
+
+function int HelloBtch(var string bitch1, var string nomas, var int hi, var int times) {
+	var int contador = 0;
+	var string que = nomas;
+	barbara = 4 * 3 + 8 * 9;
+	drama = bitch1;
+	return contador;
+}
+
+function float area(var int radio, var int radio2){
+	var float contador = 0.0;
+	contador = 3.14 * radio * radio;
+	return contador;
+}
+
+function string sayGoodbye(var string bitch) {
+	var int contador2 = 0;
+	var float areaCirculo = area(2, 3);
+	var int contador = HelloBtch("pinche", "no mms", 3*4, 5);
+	barbara = 4 * 3 + 8 * 9;
+	drama = "hai";
+	return drama;
+}
+
+
 main {
+	var string python = "hello";
+	var int hello = 2, hi = 4, bye = 5;
+	
+
+	var int dyr[2]; 
 	j = (1 * (2 + 4) * 6 + 10) > 50;
 	if(3*2>2) {
-		write("hi");
+		write("hi", 3*4);
 	}
 	j = (1 * (2 + 4) * 6 + 10) > 50;
 	if(3 > 2) {
@@ -32,4 +56,5 @@ main {
 		barbara = 3 * 4;
 	}
 	drama = "hola";
+	return 0;
 }
