@@ -214,5 +214,6 @@ class virtualMachine():
 			self.counterQuad += 1
 
 		# Print result at last quadruple
+		print("solo funciona para test01.txt porque abajo hardcodeo el acceso a la temporal")
 		finalResult = self.getValueAt('&11000', '&11000')
 		print("FINAL RESULT:", lastAddress, finalResult)

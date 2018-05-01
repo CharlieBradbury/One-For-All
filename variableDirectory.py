@@ -24,7 +24,6 @@ class variableDirectory:
         try:
             return self.directory.get(var_id, None)
         except:
-
             self.error.definition(self.error.VARIABLE_NOT_DEFINED, var_id, None)
 
     # Returns a variable with the name given as parameter

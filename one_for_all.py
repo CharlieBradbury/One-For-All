@@ -18,6 +18,7 @@ from one_for_allParser import one_for_allParser
 from one_for_allListener import one_for_allListener
 from ruleManager import ruleManager
 
+
 def main(argv):
 	input = FileStream(argv[1])
 	lexer = one_for_allLexer(input)

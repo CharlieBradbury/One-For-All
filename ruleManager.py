@@ -10,6 +10,7 @@ from parser.one_for_allListener import one_for_allListener
 from objFunction import objFunction
 from objVariable import objVariable
 from objClass import *
+<<<<<<< HEAD
 from variableDirectory import variableDirectory
 from functionDirectory import functionDirectory
 from classDirectory import classDirectory
@@ -34,6 +35,8 @@ from one_for_allListener import one_for_allListener
 from objFunction import objFunction
 from objVariable import objVariable
 from objClass import *
+=======
+>>>>>>> 5c2149a286042df86ff44edfeb16dbeadb01c713
 from variableDirectory import variableDirectory
 from functionDirectory import functionDirectory
 from classDirectory import classDirectory
@@ -135,6 +138,7 @@ class ruleManager(one_for_allListener):
 		#Create first Goto
 		main = self.jumpStack.pop()[1]
 		self.fillQuadruple(main,self.counter)
+
 		#Register main function
 		self.createAddRoutine("main", "int", None)
 
@@ -678,6 +682,7 @@ class ruleManager(one_for_allListener):
 			arg = self.opdStack.pop()
 			new_memory = param.id
 			self.verifyParams(arg,param)
+
 			# Param is the action to send the parameters of a function during
 			# a module call. The second element is the address of the current value,
 			# The last element is where the current value is going to be stored.
@@ -690,9 +695,9 @@ class ruleManager(one_for_allListener):
 		self.opdStack.append(["&"+ str(memory_address), self.returnType])
 		self.generatesQuadruple("RETURN_ASSIGN", None, None, "&" + str(memory_address))
 		self.generatesQuadruple("GOSUB", None, None, self.FunctionId)
+
 		#No sé como poner el return para que se iguale al valor de una funcion
 		#porque no lo puedo meter a la opdStack ya uqe me pide un data_type
-
 
 	def exitOutput(self, ctx):
 		if ctx.expressions is not None:
@@ -701,9 +706,6 @@ class ruleManager(one_for_allListener):
 					pass
 				else:
 					pass
-
-
-
 
 	#------------------------------------------------------
 	#	AUXILIARY METHODS
@@ -778,6 +780,13 @@ class ruleManager(one_for_allListener):
 			self.funcStack.append([name, data_type])
 		# Add 1 to counter
 		self.IDCounter += 1
+	
+	def verifyParams(self, argument, parameter):
+		if argument[0] == parameter.name and argument[1] == parameter.data_type:
+			return True
+		else:
+			#Throw error
+			return False
 
 	def verifyParams(self, argument, parameter):
 		if argument[0] == parameter.name and argument[1] == parameter.data_type:
