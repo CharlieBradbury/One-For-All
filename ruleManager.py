@@ -10,7 +10,6 @@ from parser.one_for_allListener import one_for_allListener
 from objFunction import objFunction
 from objVariable import objVariable
 from objClass import *
-<<<<<<< HEAD
 from variableDirectory import variableDirectory
 from functionDirectory import functionDirectory
 from classDirectory import classDirectory
@@ -35,8 +34,6 @@ from one_for_allListener import one_for_allListener
 from objFunction import objFunction
 from objVariable import objVariable
 from objClass import *
-=======
->>>>>>> 5c2149a286042df86ff44edfeb16dbeadb01c713
 from variableDirectory import variableDirectory
 from functionDirectory import functionDirectory
 from classDirectory import classDirectory
@@ -309,7 +306,7 @@ class ruleManager(one_for_allListener):
 
 		# Create and run virtual machine
 		vMachine = virtualMachine()
-		vMachine.currentMemory = scopeManager("local")
+		vMachine.currentScope = scopeManager("global")
 		vMachine.executeInstructions(self.quadruplesList)
 
 	#------------------------------------------------------

@@ -8,11 +8,8 @@ class virtualMachine():
 		self.counterQuad = 1
 		self.exeQuadruple = None
 
-		# Global memory (shared between all contexts), receives and object of type scopeManager
-		self.globalMemory = None
-
 		# Current memory (changes depending on the context), receives and object of type scopeManager
-		self.currentMemory = None
+		self.currentScope = None
 
 		self.adManager = addressManager()
 
@@ -76,18 +73,18 @@ class virtualMachine():
 		if(constantOrAddress[0] == "&"):
 			# Then its an address, we need to search for it in the proper variable table
 			address = constantOrAddress.replace("&", "")
-			context = self.currentMemory.adManager.getMemorySegment(address)[0]
+			context = self.currentScope.adManager.getMemorySegment(address)[0]
 			foundVariable = None
 
 			if context == "global":
 				# Search for that id in globalMemory
-				foundVariable = self.globalMemory.searchGlobalAddress(address)
+				foundVariable = self.currentScope.searchGlobalAddress(address)
 			elif context == "local":
 				# Search for that id in localMemory
-				foundVariable = self.currentMemory.searchLocalAddress(address)
+				foundVariable = self.currentScope.searchLocalAddress(address)
 			elif context == "temporal":
 				# Search for that id in temporalMemory
-				foundVariable = self.currentMemory.searchTemporalAddress(address)
+				foundVariable = self.currentScope.searchTemporalAddress(address)
 			return foundVariable
 		else:
 			# If not, then is a constant and we can return such value
@@ -101,17 +98,17 @@ class virtualMachine():
 			# Then its an address, we need to search for it in the proper variable table
 			address = address.replace("&", "")
 
-			segmentString = self.currentMemory.adManager.getMemorySegment(address)[0]
+			segmentString = self.currentScope.adManager.getMemorySegment(address)[0]
 
 			if segmentString == "global":
 				# Save the result in global memory
-				self.globalMemory.saveResultGlobal(result, address)
+				self.currentScope.saveResultGlobal(result, address)
 			elif segmentString == "local":
 				# Save the result in local memory
-				self.currentMemory.saveResultLocal(result, address)
+				self.currentScope.saveResultLocal(result, address)
 			elif segmentString == "temporal":
 				# Save the result in temporal memory
-				self.currentMemory.saveResultTemporal(result, address)
+				self.currentScope.saveResultTemporal(result, address)
 
 	def executeInstructions(self, quadruples):
 		self.totalQuad = len(quadruples)

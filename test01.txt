@@ -3,6 +3,7 @@ program test01;
 main {
 	var int b = 100;
 
-	while(b >= 10) {
+	while(b > 10) {
 		b = b - 1;
 	}
+}

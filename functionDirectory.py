@@ -22,11 +22,8 @@ class functionDirectory:
     def getAddressFunction(self, func_name):
         if self.checkFunction(func_name):
             return self.directory.get(func_name, None)
-<<<<<<< HEAD
         else:
             self.error.definition(self.error.FUNCTION_NOT_DEFINED, func_name, None)
-=======
->>>>>>> 5c2149a286042df86ff44edfeb16dbeadb01c713
 
     def printDirectory(self):
         for key, func in self.directory.items():
