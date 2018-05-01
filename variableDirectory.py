@@ -32,7 +32,8 @@ class variableDirectory:
         for key, variable in self.directory.items():
             if variable.name == var_name:
                 return variable
-        self.error.definition(self.error.VARIABLE_NOT_DEFINED, var_name, None)
+
+        #self.error.definition(self.error.VARIABLE_NOT_DEFINED, var_name, None)
 
     # Receives a variable as parameter and tries to add it to the directory
     # If it was already in the directory, is just overwrites the variable

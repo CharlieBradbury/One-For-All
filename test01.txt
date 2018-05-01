@@ -1,9 +1,16 @@
 program test01;
 
-main {
-	var int b = 100;
+	var int a = 10;
 
-	while(b > 10) {
-		b = b - 1;
+main {
+	var int b = 1;
+
+	if(a >= 100) 
+	{
+		b = 2;
+	} 
+	else
+	{
+		b = 3;
 	}
 }
