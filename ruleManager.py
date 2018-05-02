@@ -32,10 +32,14 @@ from one_for_allListener import one_for_allListener
 
 from objFunction import objFunction
 from objVariable import objVariable
-from objClass import *
+from classVariable import classVariable
+from objectO import objectO
+from classMethod import *
+from objClass import objClass
 from variableDirectory import variableDirectory
 from functionDirectory import functionDirectory
 from classDirectory import classDirectory
+from objectDirectory import objectDirectory
 
 
 from quadruples import quadruples
@@ -69,13 +73,16 @@ class ruleManager(one_for_allListener):
 		#------------------------------------------------------
 
 		# Class Directory
-		self.classDirectory = dict()
+		self.classDirectory = classDirectory()
 
 		# Function directory
 		self.funcDirectory = functionDirectory()
 
 		# Variable Directory
 		self.varDirectory = variableDirectory()
+
+		# Object Directory 
+		self.objects = objectDirectory()
 
 		# Current class (Type: objClass)
 		self.currentClass = None
@@ -115,6 +122,12 @@ class ruleManager(one_for_allListener):
 		self.parameterStack = []
 		self.FunctionId = None
 
+		#Stack for storing parameters for the initialization of objects
+		self.initStack = []
+		self.initEvalStack = []
+	
+		#Global variable to identify objects
+		self.isObject = False
 
 	#------------------------------------------------------
 	# 	CLASS, FUNCTIONS AND VARIABLES
@@ -146,6 +159,7 @@ class ruleManager(one_for_allListener):
 		# Create new class just with the ID and name of the class
 		# This will set current class to the recently created class
 		className = ctx.TOK_ID().getText()
+		self.currentScope = ("local",className)
 		self.createEmptyClass(className)
 
 	def enterInheritance(self, ctx):
@@ -180,6 +194,12 @@ class ruleManager(one_for_allListener):
 			# Obtain type and names of the single or multiple variables associated to that type
 			# E.g: public var int a1, a2;
 			currentType = ctx.data_type().getText()
+
+			if self.verifyType(currentType) is False:
+				#Throw error 
+				print("Invalid data type")
+				sys.exit()
+
 			currentVariables = ctx.TOK_ID()
 
 			if ctx.TOK_RBRACKET():
@@ -193,11 +213,16 @@ class ruleManager(one_for_allListener):
 				dim = 0
 
 			try:
-				# For each name, create an object variable with such information
-				for var in currentVariables:
-					#Create object
-					newVariable = self.createAddVariable(var.getText(), currentType, dim, size)
+				if not self.isObject:
+					#If it's not registered in class directory then is a normal variable
+					for var in currentVariables:
+						#Create variable object
+						newVariable = self.createAddVariable(var.getText(), currentType, dim, size)
+				else:
+					for var in currentVariables:
+						newVariable = self.createAddVariable(var.getText(), currentType, dim, size)
 			except:
+				print("SE ESTA MAMANDO")
 				self.error.definition(self.error.VARIABLE_CREATION, '', '')
 
 		except:
@@ -297,6 +322,8 @@ class ruleManager(one_for_allListener):
 	def exitClasses(self, ctx):
 		# Reset part of class boolean
 		self.isPartOfClass = False
+		self.currentScope = ("global",None)
+		self.generatesQuadruple("ENDCLASS", None, None, None)
 
 	def exitRestOfProgram(self, ctx):
 		self.generatesQuadruple('END',None, None, None)
@@ -310,6 +337,10 @@ class ruleManager(one_for_allListener):
 			func.printFunction()
 			func.localVars.printDirectory()
 		'''
+
+		self.printClassDictionary()
+		self.objects.printDirectory()
+
 		# Create and run virtual machine
 		vMachine = virtualMachine()
 		vMachine.currentScope = scopeManager("local")
@@ -548,10 +579,14 @@ class ruleManager(one_for_allListener):
 
 			self.funcStack.append(formattedFunction)
 
-		elif operator == "GOSUB" or operator == "RETURN_ASSIGN":
+		elif operator == "GOSUB" or operator == "RETURN_ASSIGN" or operator == "WRITE":
 			resultQuadruple = quadruples(self.counter, operator, None, None,result)
 			self.counter += 1
 			self.quadruplesList.append(resultQuadruple)
+		elif operator == "ENDCLASS"  or operator == "END_WRITE":
+			resultCuadruple = quadruples(self.counter, operator, None, None,None)
+			self.counter += 1
+			self.quadruplesList.append(resultCuadruple)
 		elif operator == 'RETURN':
 			resultQuadruple = quadruples(self.counter, operator, None, None,result[0])
 			self.counter += 1
@@ -560,6 +595,16 @@ class ruleManager(one_for_allListener):
 			resultQuadruple = quadruples(self.counter, operator, left, None, result)
 			self.counter += 1
 			self.quadruplesList.append(resultQuadruple)
+		elif operator == 'READ':
+			left_type = left[1]
+			right_type = right.data_type
+			if left_type == "string" and right_type == "string":
+				resultCuadruple = quadruples(self.counter,operator, left[0], None, '&'+str(right.id))
+				self.counter += 1
+				self.quadruplesList.append(resultCuadruple)
+			else:
+				print(operator, left_type, right_type)
+				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
 		else:
 			left_type = left[1]
 			right_type = right[1]
@@ -568,10 +613,16 @@ class ruleManager(one_for_allListener):
 				self.counter += 1
 				self.quadruplesList.append(resultQuadruple)
 			else:
-				print(operator, left_type, right_type)
 				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
-				print(left,right)
 
+	#----------------------------------------------------------------------------------------
+	#		QUADRUPLES FOR CLASSES
+	#----------------------------------------------------------------------------------------
+	def generateClassQuadruples(self, operator, left, right, result):
+		if operator == "ERA":
+			resultCuadruple = quadruples(self.counter, operator, None, right,result)
+			self.counter += 1
+			self.quadruplesList.append(resultCuadruple)
 
 	#Method that retrieves an specific quadruple and modifies its value
 	def fillQuadruple(self, id, cont):
@@ -755,22 +806,123 @@ class ruleManager(one_for_allListener):
 		self.generatesQuadruple("RETURN_ASSIGN", None, None, "&" + str(memory_address))
 		self.generatesQuadruple("GOSUB", None, None, self.FunctionId)
 
-		#No sé como poner el return para que se iguale al valor de una funcion
-		#porque no lo puedo meter a la opdStack ya uqe me pide un data_type
+	# CONSTRUCTOR
+	def enterConstructor(self, ctx):
+		self.currentScope = ("local", "constructor")
+		self.addressManager.restartVirtualAddress()
+		lst_param_const = []
+		try:
+			# Obtain parameters, this case is for the first parameter, in case there is one
+			paramName = ctx.parameters().TOK_ID().getText()
+			paramType =  ctx.parameters().data_type().getText()
+	
+			newVariable = objVariable(self.addressManager.getVirtualAddress(paramType, self.currentScope[0]), paramName, paramType)
+			self.addressManager.updateVirtualAddress(paramType, self.currentScope[0])
+			
+			lst_param_const.append(newVariable)
+		except:
+			pass
+		try:
+			countParameters = 0
+			# Read parameters that go after the comma of the first one
+			while ctx.parameters().parameters_recursive() is not None:
+				# Counter for recursive parameters, this is used for accesing parameters that go after the first one
+				paramType = ctx.parameters().parameters_recursive().data_type(countParameters).getText()
+				paramName = ctx.parameters().parameters_recursive().TOK_ID(countParameters).getText()
 
-	def exitOutput(self, ctx):
-		if ctx.expressions is not None:
-			for expr in ctx.expressions():
-				if '"' in expr.getText():
-					pass
-				else:
-					pass
+				newVariable = objVariable(self.addressManager.getVirtualAddress(paramType, self.currentScope[0]), paramName, paramType)
 
+				self.addressManager.updateVirtualAddress(paramType, self.currentScope[0])
+				lst_param_const.append(newVariable)
+				countParameters += 1
+
+		except:
+			pass
+		self.createConstructor(lst_param_const)
+	
+
+	def enterInit_class(self, ctx):
+		#Get name of the variable that its instantiated
+		name = ctx.TOK_ID().getText()
+		#Identify the current scope 
+		if self.currentScope[0] == "local":
+			variables = self.funcDirectory.getAddressFunction(self.currentScope[1])
+			#Look for the variable in the directory
+			variable = variables.getVariableDirectory().getVariableByName(name)
+
+		if variable is None or self.currentScope[0] == "global" :
+			variable = self.varDirectory.getVariableByName(name)
+
+		elif variable is None:
+			self.error.definition(self.error.VARIABLE_NOT_DEFINED, name, None)
+		#Get address of the object
+		id = variable.id
+		#Check object class
+		object_class = variable.data_type
+		#Create new instance in the object directory
+		self.createAddObject(id, name, object_class)
+		#Create quaruples for ERA CONSTRUCTOR
+		self.generateClassQuadruples("ERA", None, object_class, "init")
+
+		#Create quadruples for sending the parameters
+		#Look for the method in the 
+
+		print(variable)
+	
+	def enterNeuro_initEval(self, ctx):
+		self.initEvalStack.append(self.opdStack.pop())
+
+	def enterNeuro_createConstructor(self, ctx):
+		#Create quadruples for sending the params
+		#They are already ordered correctly
+		obj_attr = self.initEvalStack.pop(0)
+		#self.generateClassQuadruples("INIT_ATTR",)
+
+
+	#----------------------------------------------
+	#	OUTPUT
+	#----------------------------------------------
+		
+	def enterNeuro_finishOutput(self, ctx):
+		self.generatesQuadruple("END_WRITE", None, None,1)
+
+	def enterNeuro_getOutput(self, ctx):
+		val = self.opdStack.pop()
+		
+		self.generatesQuadruple("WRITE",None, None, val[0])
+
+	#----------------------------------------------
+	#	INPUT
+	#----------------------------------------------
+	def enterInput_(self, ctx):
+		val = ctx.STRING().getText()
+		input_val = (val, "string")
+		name = ctx.TOK_ID().getText()
+		#Check if variable exists in current context
+		variable = ''
+		#Verify that the name exists in the variable table
+		try: 
+			if self.currentScope[0] == "local":
+				variables = self.funcDirectory.getAddressFunction(self.currentScope[1])
+				variable = variables.getVariableDirectory().getVariableByName(name)
+
+			if variable is None or self.currentScope[0] == "global" :
+				variable = self.varDirectory.getVariableByName(name)
+
+
+			elif variable is None:
+				self.error.definition(self.error.VARIABLE_NOT_DEFINED, name, None)
+			#Create quadruple
+			self.generatesQuadruple('READ',input_val,variable, None)
+		except:
+			pass
+
+	
 	#------------------------------------------------------
 	#	AUXILIARY METHODS
 	#------------------------------------------------------
 	def printClassDictionary(self):
-		for key, _class in self.classDirectory.items():
+		for key, _class in self.classDirectory.directory.items():
 			#Print information of each class
 			_class.printClass()
 
@@ -788,44 +940,51 @@ class ruleManager(one_for_allListener):
 			# Set current privacy of the group of variables
 			currentPrivacy = "public" if self.isPublic else "private"
 
-			# If this is part of a class, then create an objVariable_Class object
-			newClassVariable = objVariable_Class(self.IDCounter, name, data_type, currentPrivacy)
+			# If this is part of a class, then create an classVariable object 
+			newClassVariable = classVariable(self.addressManager.getVirtualAddress(data_type, self.currentScope[0]), name, data_type, currentPrivacy)
+			#Create a dict entry
+			var = {self.addressManager.getVirtualAddress(data_type, self.currentScope[0]) : newClassVariable}
+			#Update the address 
+			self.addressManager.updateVirtualAddress(data_type, self.currentScope[0])
+			#Save the variable in the current class directory
+			self.currentClass.variableClassDirectory.update(var)
 
-			# Add it calling the corresponding method depending if it is a public or global variable
-			if currentPrivacy:
-				self.currentClass.addPublicVariable(newClassVariable)
-			else:
-				self.currentClass.addPrivateVariable(newClassVariable)
 		else:
 			# Else, this variable is not associated with a class and we need to create a objVariable object
 			# and add it directly to the global variables directory
+			if not self.isObject:
+				newVariable = objVariable(self.addressManager.getVirtualAddress(data_type, self.currentScope[0]), name, data_type, dimensions, size)
+				self.addressManager.updateVirtualAddress(data_type, self.currentScope[0], newVariable.size)
+				if self.currentScope[0] == "global":
+					self.varDirectory.addVariable(newVariable)
+				else:
+					#In case of declaring a variable inside a function
+					func = self.funcDirectory.getAddressFunction(self.currentScope[1])
+					func.localVars.addVariable(newVariable)
+					func.countVars += 1
+			elif self.isObject:
+				newVariable = objVariable(self.addressManager.getVirtualAddress("obj", self.currentScope[0]), name, data_type, dimensions, size)
+				self.addressManager.updateVirtualAddress("obj", self.currentScope[0])
 
-			newVariable = objVariable(self.addressManager.getVirtualAddress(data_type, self.currentScope[0]), name, data_type, dimensions, size)
-			newVariable.setSize()
-
-			self.addressManager.updateVirtualAddress(data_type, self.currentScope[0], newVariable.size)
-
-			if self.currentScope[0] == "global":
-				self.varDirectory.addVariable(newVariable)
-			else:
-				#In case of declaring a variable inside a function
-				func = self.funcDirectory.getAddressFunction(self.currentScope[1])
-				func.localVars.addVariable(newVariable)
-				func.countVars += 1
+				self.isObject = False
+				if self.currentScope[0] == "global":
+					self.varDirectory.addVariable(newVariable)
+				else:
+					#In case of declaring a variable inside a function
+					func = self.funcDirectory.getAddressFunction(self.currentScope[1])
+					func.localVars.addVariable(newVariable)
+					func.countVars += 1
 			counter = 0
 
 	def createAddRoutine(self, name, data_type, params):
 		if self.isPartOfClass:
 			# Set current privacy of the group of variables
 			currentPrivacy = "public" if self.isPublic else "private"
+			# If this is part of a class, then create an classMethod object
+			newMethod = classMethod(self.counter, name, data_type, currentPrivacy, params)
+			method = {self.counter : newMethod}
+			self.currentClass.methodsClassDirectory.update(method)
 
-			# If this is part of a class, then create an objMethod object
-			newMethod = objMethod(self.IDCounter, name, data_type, params, currentPrivacy)
-
-			if currentPrivacy:
-				self.currentClass.addPublicMethod(newMethod)
-			else:
-				self.currentClass.addPrivateMethod(newMethod)
 		else:
 			# Else, this variable is not associated with a class and we need to create a objFunction object
 			# and add it directly to the function directory
@@ -843,12 +1002,58 @@ class ruleManager(one_for_allListener):
 		# Add 1 to counter
 		self.IDCounter += 1
 	
+	def createAddObject(self, id, name, data_type):
+		#Look for the class of the object in the classes directory
+		if self.classDirectory.checkClassByName(data_type):
+			#If it exists then create a new object in the object directory
+			newObject = objectO(id, name, data_type)
+			
+			#Pass the attributes and methods of the class to the object
+			for key, class_value in self.classDirectory.directory.items():
+				if class_value.name == name:
+					#Generates copy of the class attributes into the object attrs
+					newObject.objAttr.copy(class_value.variableClassDirectory)  
+					#Generates copy of the class methods into the object methods
+					newObject.objMethods.copy(class_value.methodsClassDirectory) 
+
+			print("Object created", name)
+			#Add object to the object directory
+			self.objects.addObject(newObject)
+		else:
+			print("Class is not declared")
+			sys.exit()
+	
+	def createConstructor(self, params):
+		newMethod = classMethod(self.counter, "constructor", None, "public", None)
+		#Add parameters to the local variable table
+		if params is not None:
+			param_number = len(params)
+			newMethod.countVars = param_number
+			newMethod.localVars.addMultipleVariables(params)
+		method = {self.counter : newMethod}
+		newMethod.localVars.printDirectory()
+		self.currentClass.methodsClassDirectory.update(method)
+
+	
 	def verifyParams(self, argument, parameter):
 		if argument[0] == parameter.name and argument[1] == parameter.data_type:
 			return True
 		else:
 			#Throw error
 			return False
+	
+	def verifyType(self, type):
+		#First check for primitives
+		if type == "string" or type == "bool" or type == "float" or type == "int":
+			return True
+		else:
+			#Check if is a class
+			if self.classDirectory.checkClassByName(type):
+				self.isObject = True
+				return True
+			else:
+				self.isObject = False
+				return False
 
 	def verifyParams(self, argument, parameter):
 		if argument[0] == parameter.name and argument[1] == parameter.data_type:
@@ -865,4 +1070,4 @@ class ruleManager(one_for_allListener):
 		self.IDCounter += 1
 
 	def addFinishedClass(self, objClass):
-		self.classDirectory[objClass.name] = objClass
+		self.classDirectory.addClass(objClass)

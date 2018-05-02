@@ -80,6 +80,15 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by one_for_allParser#constructor.
+    def enterConstructor(self, ctx:one_for_allParser.ConstructorContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#constructor.
+    def exitConstructor(self, ctx:one_for_allParser.ConstructorContext):
+        pass
+
+
     # Enter a parse tree produced by one_for_allParser#routines.
     def enterRoutines(self, ctx:one_for_allParser.RoutinesContext):
         pass
@@ -122,6 +131,15 @@ class one_for_allListener(ParseTreeListener):
 
     # Exit a parse tree produced by one_for_allParser#neuro_array.
     def exitNeuro_array(self, ctx:one_for_allParser.Neuro_arrayContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#neuroparam_rec.
+    def enterNeuroparam_rec(self, ctx:one_for_allParser.Neuroparam_recContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuroparam_rec.
+    def exitNeuroparam_rec(self, ctx:one_for_allParser.Neuroparam_recContext):
         pass
 
 
@@ -284,6 +302,33 @@ class one_for_allListener(ParseTreeListener):
 
     # Exit a parse tree produced by one_for_allParser#output.
     def exitOutput(self, ctx:one_for_allParser.OutputContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#output_recursive.
+    def enterOutput_recursive(self, ctx:one_for_allParser.Output_recursiveContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#output_recursive.
+    def exitOutput_recursive(self, ctx:one_for_allParser.Output_recursiveContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#neuro_getOutput.
+    def enterNeuro_getOutput(self, ctx:one_for_allParser.Neuro_getOutputContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_getOutput.
+    def exitNeuro_getOutput(self, ctx:one_for_allParser.Neuro_getOutputContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#neuro_finishOutput.
+    def enterNeuro_finishOutput(self, ctx:one_for_allParser.Neuro_finishOutputContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_finishOutput.
+    def exitNeuro_finishOutput(self, ctx:one_for_allParser.Neuro_finishOutputContext):
         pass
 
 
@@ -572,6 +617,33 @@ class one_for_allListener(ParseTreeListener):
 
     # Exit a parse tree produced by one_for_allParser#id_definition_.
     def exitId_definition_(self, ctx:one_for_allParser.Id_definition_Context):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#init_class.
+    def enterInit_class(self, ctx:one_for_allParser.Init_classContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#init_class.
+    def exitInit_class(self, ctx:one_for_allParser.Init_classContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#neuro_initEval.
+    def enterNeuro_initEval(self, ctx:one_for_allParser.Neuro_initEvalContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_initEval.
+    def exitNeuro_initEval(self, ctx:one_for_allParser.Neuro_initEvalContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#neuro_createConstructor.
+    def enterNeuro_createConstructor(self, ctx:one_for_allParser.Neuro_createConstructorContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_createConstructor.
+    def exitNeuro_createConstructor(self, ctx:one_for_allParser.Neuro_createConstructorContext):
         pass
 
 
