@@ -75,9 +75,9 @@ class virtualMachine():
 
 		return parsedValue
 
-	def parseConstant(self, constantString, resultAddress):
-		parsedValue = None
+	def parseConstant(self, constantString, resultAddress=None):
 
+		
 		if constantString[0] == "\"":
 			# Then is a string
 			parseValue = constantString
@@ -110,6 +110,8 @@ class virtualMachine():
 
 			if context == "global":
 				# Search for that id in globalMemory
+				if self.currentScope.isArrayGlobal(address):
+					print("DOBLE MAMALON")
 				foundVariable = self.currentScope.searchGlobalAddress(address)
 			elif context == "local":
 				# Search for that id in localMemory
@@ -122,6 +124,9 @@ class virtualMachine():
 				return foundVariable.value
 			else:
 				return None
+		elif operator == 'ARRAY_POS':
+			cleanResult = int(constantOrAddress)
+			return cleanResult
 		elif operator is not None:
 			# If not, then is a constant and we can return such value
 			cleanResult = self.parseConstantWithOperator(constantOrAddress, resultAddress, operator)
@@ -132,14 +137,19 @@ class virtualMachine():
 			return cleanResult
 		
 	# Receives a value and an address to save that result at
-	def saveResultAt(self, result, address):	
+	def saveResultAt(self, result, address, offSet=-1):	
 			# Then its an address, we need to search for it in the proper variable table
 			address = address.replace("&", "")
 			context = self.currentScope.adManager.getMemorySegment(address)[0]
-
+	
 			if context == "global":
+				if self.currentScope.isArrayGlobal(address):
+					# Retrieve array number
+					offSet = self.offSetStack.pop()
+					print("AKI", address, context, offSet)
 				# Save the result in global memory
-				self.currentScope.saveResultGlobal(result, address)
+				print("SI", result, address, offSet)
+				self.currentScope.saveResultGlobal(result, address, offSet)
 			elif context == "local":
 				# Save the result in local memory
 				self.currentScope.saveResultLocal(result, address)
@@ -295,18 +305,20 @@ class virtualMachine():
 				previousPointer = self.jumpReturnStack.pop()
 				self.counterQuad = previousPointer
 			elif operator == 'ARRAY_POS':
-				offSetValue = self.getValueAt(resultAddress)
+				offSetValue = self.getValueAt(resultAddress, None, operator)
 				self.offSetStack.append(offSetValue)
 			elif operator == 'ARRAY_DECLARE':
 				# Create array
-				pass
+				self.saveResultAt(None, resultAddress, int(leftOpd))
+
+
 
 			# Increase counter by 1
 			self.counterQuad += 1
 
 
 		# Print result at last quadruple
-		finalResult = self.getValueAt('&11000', '&11000')
+		finalResult = self.getValueAt('&1000', '&1000')
 		print("FINAL RESULT:", lastAddress, finalResult, self.currentScope.scopeName)
 
 	def printMemory(self):

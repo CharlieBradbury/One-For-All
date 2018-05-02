@@ -51,59 +51,21 @@ class scopeManager():
 			return None
 		
 	# Saves the result of a temporal variable in an adress
-	def saveResultLocal(self, resultValue, address, offset=-1):
+	def saveResultLocal(self, resultValue, address):
 		typeString = str(type(resultValue))
-		varFound = self.searchLocalAddress(address)
-
-		if offset > -1:
-			if varFound is None:
-				# Then the variable does not exist and we create it
-				resultArray = [None] * (offset + 1) 
-			else:
-				# Modify specific element
-				resultArray = varFound.value
-
-			resultArray[offset] = resultValue
-			tempVariable = objVariable(address, "localVariable", typeString, 0, 1, resultArray)
-			self.localMemory.addVariable(tempVariable)
-		else:
-			# Variabe is simple
-			tempVariable = objVariable(address, "localVariable", typeString, 0, 1, resultValue)
-			self.localMemory.addVariable(tempVariable)
+		tempVariable = objVariable(address, "localVariable", typeString, 0, 1, resultValue)
+		self.localMemory.addVariable(tempVariable)
 
 	# Searchs temporal variable and returns its value
 	def searchGlobalAddress(self, address, offset=-1):
 		if(self.globalMemory.checkVariableById(address)):
-			foundVariable = self.globalMemory.getVariableById(address)
-			valueToReturn = None
-
-			if isinstance(foundVariable.value, list):
-				# Is an array
-				valueToReturn = foundVariable.value[offset]
-			else:
-				# Is a simple variable
-				valueToReturn = foundVariable.value
-
-			return valueToReturn
+			return self.globalMemory.getVariableById(address)
 		else:
 			return None
-
-	def isArrayGlobal(self, address):
-		if(self.globalMemory.checkVariableById(address)):
-			foundVariable = self.globalMemory.getVariableById(address)
-			return isinstance(foundVariable.value, list)
-		else:
-			return False
-
-	def isArrayLocal(self, address):
-		if(self.localMemory.checkVariableById(address)):
-			foundVariable = self.localMemory.getVariableById(address)
-			return isinstance(foundVariable.value, list)
-		else:
-			return False
 		
 	# Saves the result of a temporal variable in an adress
 	def saveResultGlobal(self, resultValue, address, offset=-1):
+		print("AAAAAAA", resultValue, address, offset)
 		typeString = str(type(resultValue))
 		varFound = self.searchGlobalAddress(address)
 
@@ -114,6 +76,8 @@ class scopeManager():
 			else:
 				# Modify specific element
 				resultArray = varFound.value
+				resultArray[offset] = resultValue
+				print("my show", resultArray)
 
 			resultArray[offset] = resultValue
 			tempVariable = objVariable(address, "globalVariable", typeString, 0, 1, resultArray)
@@ -122,6 +86,17 @@ class scopeManager():
 			# Variabe is simple
 			tempVariable = objVariable(address, "globalVariable", typeString, 0, 1, resultValue)
 			self.globalMemory.addVariable(tempVariable)
+
+	def isArrayGlobal(self, address):
+		# Get array with such address
+		foundVariable = self.searchGlobalAddress(address)
+
+		if foundVariable is None:
+			return False
+		else:
+			return isinstance(foundVariable.value, list)
+
+		
 
 
 		
