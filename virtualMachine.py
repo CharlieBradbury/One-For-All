@@ -25,6 +25,9 @@ class virtualMachine():
 		# For managing multipe contexts
 		self.contextStack = []
 
+		# Array stack
+		self.offSetStack = []
+
 	def parseVariable(self, variable):
 		variableType = variable.data_type;
 		variableUnparsedValue = variable.value;
@@ -72,9 +75,9 @@ class virtualMachine():
 
 		return parsedValue
 
-	def parseConstant(self, constantString, resultAddress):
-		parsedValue = None
+	def parseConstant(self, constantString, resultAddress=None):
 
+		
 		if constantString[0] == "\"":
 			# Then is a string
 			parseValue = constantString
@@ -106,7 +109,7 @@ class virtualMachine():
 			foundVariable = None
 
 			if context == "global":
-				# Search for that id in globalMemory
+				# Search for that id in globalMemory	i
 				foundVariable = self.currentScope.searchGlobalAddress(address)
 			elif context == "local":
 				# Search for that id in localMemory
@@ -114,7 +117,20 @@ class virtualMachine():
 			elif context == "temporal":
 				# Search for that id in temporalMemory
 				foundVariable = self.currentScope.searchTemporalAddress(address)
-			return foundVariable
+
+			valueToReturn = None
+
+			if foundVariable is not None:
+				if self.currentScope.isArrayGlobal(address):
+					offSet = self.offSetStack.pop()
+					valueToReturn = foundVariable.value[offSet]
+				else:
+					valueToReturn = foundVariable.value
+
+			return valueToReturn
+		elif operator == 'ARRAY_POS':
+			cleanResult = int(constantOrAddress)
+			return cleanResult
 		elif operator is not None:
 			# If not, then is a constant and we can return such value
 			cleanResult = self.parseConstantWithOperator(constantOrAddress, resultAddress, operator)
@@ -125,15 +141,17 @@ class virtualMachine():
 			return cleanResult
 		
 	# Receives a value and an address to save that result at
-	def saveResultAt(self, result, address):	
-
+	def saveResultAt(self, result, address, offSet=-1):	
 			# Then its an address, we need to search for it in the proper variable table
 			address = address.replace("&", "")
 			context = self.currentScope.adManager.getMemorySegment(address)[0]
-
+	
 			if context == "global":
+				if self.currentScope.isArrayGlobal(address):
+					# Retrieve array number
+					offSet = self.offSetStack.pop()
 				# Save the result in global memory
-				self.currentScope.saveResultGlobal(result, address)
+				self.currentScope.saveResultGlobal(result, address, offSet)
 			elif context == "local":
 				# Save the result in local memory
 				self.currentScope.saveResultLocal(result, address)
@@ -288,10 +306,18 @@ class virtualMachine():
 				# Then, we can move the pointer back to where we were
 				previousPointer = self.jumpReturnStack.pop()
 				self.counterQuad = previousPointer
+			elif operator == 'ARRAY_POS':
+				offSetValue = self.getValueAt(resultAddress, None, operator)
+				self.offSetStack.append(offSetValue)
+			elif operator == 'ARRAY_DECLARE':
+				# Create array
+				self.saveResultAt(None, resultAddress, int(leftOpd))
+
 
 
 			# Increase counter by 1
 			self.counterQuad += 1
+
 
 		# Print result at last quadruple
 		finalResult = self.getValueAt('&11000', '&11000')

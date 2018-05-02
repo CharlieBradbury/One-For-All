@@ -135,34 +135,34 @@ class addressManager():
 				return self.COUNTER_GLOBALS_STRING
 	
 	#Method that updates the virtual addresses
-	def updateVirtualAddress(self, data_Type, scope):
+	def updateVirtualAddress(self, data_Type, scope, size=1):
 		if scope == "temporal":
 			if data_Type == "int":
-				self.COUNTER_TEMPORALS_INT += 1
+				self.COUNTER_TEMPORALS_INT += size
 			elif data_Type == "float":
-				self.COUNTER_TEMPORALS_FLOAT += 1
+				self.COUNTER_TEMPORALS_FLOAT += size
 			elif data_Type == "bool":
-				self.COUNTER_TEMPORALS_BOOLEAN += 1
+				self.COUNTER_TEMPORALS_BOOLEAN += size
 			elif data_Type == "string":
-				self.COUNTER_TEMPORALS_STRING += 1
+				self.COUNTER_TEMPORALS_STRING += size
 		elif scope == "local":
 			if data_Type == "int":
-				self.COUNTER_LOCALS_INT += 1
+				self.COUNTER_LOCALS_INT += size
 			elif data_Type == "float":
-				self.COUNTER_LOCALS_FLOAT += 1
+				self.COUNTER_LOCALS_FLOAT += size
 			elif data_Type == "bool":
-				self.COUNTER_LOCALS_BOOLEAN += 1
+				self.COUNTER_LOCALS_BOOLEAN += size
 			elif data_Type == "string":
-				self.COUNTER_LOCALS_STRING += 1
+				self.COUNTER_LOCALS_STRING += size
 		elif scope == "global":
 			if data_Type == "int":
-				self.COUNTER_GLOBALS_INT += 1
+				self.COUNTER_GLOBALS_INT += size
 			elif data_Type == "float":
-				self.COUNTER_GLOBALS_FLOAT += 1
+				self.COUNTER_GLOBALS_FLOAT += size
 			elif data_Type == "bool":
-				self.COUNTER_GLOBALS_BOOLEAN += 1
+				self.COUNTER_GLOBALS_BOOLEAN += size
 			elif data_Type == "string":
-				self.COUNTER_GLOBALS_STRING += 1
+				self.COUNTER_GLOBALS_STRING += size
 
 	# Method that returns type of operator
 	def typeOfOperator(self, operator):
