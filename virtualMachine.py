@@ -46,11 +46,20 @@ class virtualMachine():
 			newQuad = quadruples(listQuad[0], listQuad[1], listQuad[2], listQuad[3], listQuad[4])
 			self.quadruples.append(newQuad)
 
+		self.printQuadruples()
 		self.executeInstructions()
 
+
 	def printQuadruples(self):
-		for quadruple in self.quadruples:
-			print(quadruple.id, quadruple.opt, quadruple.opd1, quadruple.opd2, quadruple.result)
+		counter = 1;
+		for quad in self.quadruples:
+			
+			leftOpd = quad.opd1
+			rightOpd = quad.opd2
+			operator = quad.opt
+			resultAddress = quad.result
+			print(counter, operator, leftOpd, rightOpd, resultAddress)
+			counter += 1
 			
 	def parseVariable(self, variable):
 		variableType = variable.data_type;
@@ -183,20 +192,21 @@ class virtualMachine():
 				# Save the result in temporal memory
 				self.currentScope.saveResultTemporal(result, address)
 
+
 	def executeInstructions(self):
+
 		self.totalQuad = len(self.quadruples)
 
 		lastAddress = None
 
 		while self.counterQuad <= self.totalQuad:
+
 			# Obtain quadruple to execute and the operator
 			exeQuadruple = self.quadruples[self.counterQuad - 1]
 			leftOpd = exeQuadruple.opd1
 			rightOpd = exeQuadruple.opd2
 			operator = exeQuadruple.opt
 			resultAddress = exeQuadruple.result
-
-
 
 			# ASSIGNMENT OPERATOR
 			if operator == '=':
