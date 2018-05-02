@@ -1,20 +1,29 @@
 from addressManager import addressManager
+from scopeManager import scopeManager
+import copy
 
 class virtualMachine():
 	def __init__(self):
 		# Total of quadruples
 		self.totalQuad = None
 		# Counter of the current quads to execute and actual quad to execute
-		self.counterQuad = 0
+		self.counterQuad = 1
 		self.exeQuadruple = None
 
-		# Global memory (shared between all contexts), receives and object of type scopeManager
-		self.globalMemory = None
-
 		# Current memory (changes depending on the context), receives and object of type scopeManager
-		self.currentMemory = None
+		self.currentScope = None
 
 		self.adManager = addressManager()
+
+		# For managing jumps caused by goto, gotof, gosub and return
+		self.jumpStack = []
+		# For managing parameters to be returned in routines
+		self.returnStack = []
+
+		self.jumpReturnStack = []
+
+		# For managing multipe contexts
+		self.contextStack = []
 
 	def parseVariable(self, variable):
 		variableType = variable.data_type;
@@ -35,7 +44,7 @@ class virtualMachine():
 	# Parse a constant (in string form from quadruple) into an actual value
 	# of type. Result address and operator are used as extra info in trying to determine
 	# the value of constantString, specially in the case of relational comparitions
-	def parseConstant(self, constantString, resultAddress, operator):
+	def parseConstantWithOperator(self, constantString, resultAddress, operator):
 		parsedValue = None
 
 		if constantString[0] == "\"":
@@ -63,71 +72,97 @@ class virtualMachine():
 
 		return parsedValue
 
+	def parseConstant(self, constantString, resultAddress):
+		parsedValue = None
+
+		if constantString[0] == "\"":
+			# Then is a string
+			parseValue = constantString
+		else:
+			# Get type of operator and of the result (based on its address number)
+			resultType = self.adManager.getMemorySegment(resultAddress.replace("&", ""))[1]
+
+			if resultType == "int":
+				parsedValue = int(constantString)
+			elif resultType == "float":
+				parsedValue = float(constantString)
+			elif resultType == "boolean":
+				if constantString in ["True", "False"]:
+					parsedValue = (constantString == "True")
+
+		return parsedValue
+
 	# Value that receives as parameter an address (identified with an &) or a
 	# constant (without &) and returns its value. If receives a constant, it just returns
 	# such value. If it receives an address, it searchs for the value of that address
 	# in the memory of the current context.
-	def getValueAt(self, constantOrAddress, resultAddress, operator=None):
+	def getValueAt(self, constantOrAddress, resultAddress=None, operator=None):
 
-		#print("Cur", constantOrAddress, resultAddress, operator)
-
+		constantOrAddress = str(constantOrAddress)
 		if(constantOrAddress[0] == "&"):
 			# Then its an address, we need to search for it in the proper variable table
 			address = constantOrAddress.replace("&", "")
-			context = self.currentMemory.adManager.getMemorySegment(address)[0]
-
+			context = self.currentScope.adManager.getMemorySegment(address)[0]
 			foundVariable = None
 
 			if context == "global":
 				# Search for that id in globalMemory
-				foundVariable = self.globalMemory.searchGlobalAddress(address)
+				foundVariable = self.currentScope.searchGlobalAddress(address)
 			elif context == "local":
 				# Search for that id in localMemory
-				foundVariable = self.currentMemory.searchLocalAddress(address)
+				foundVariable = self.currentScope.searchLocalAddress(address)
 			elif context == "temporal":
 				# Search for that id in temporalMemory
-				foundVariable = self.currentMemory.searchTemporalAddress(address)
+				foundVariable = self.currentScope.searchTemporalAddress(address)
 			return foundVariable
-		else:
+		elif operator is not None:
 			# If not, then is a constant and we can return such value
-			cleanResult = self.parseConstant(constantOrAddress, resultAddress, operator)
+			cleanResult = self.parseConstantWithOperator(constantOrAddress, resultAddress, operator)
+			return cleanResult
+		else:
+
+			cleanResult = self.parseConstant(constantOrAddress, resultAddress)
 			return cleanResult
 		
 	# Receives a value and an address to save that result at
-	def saveResultAt(self, result, address):
+	def saveResultAt(self, result, address):	
 
-		if(address[0] == "&"):
 			# Then its an address, we need to search for it in the proper variable table
 			address = address.replace("&", "")
+			context = self.currentScope.adManager.getMemorySegment(address)[0]
 
-			segmentString = self.currentMemory.adManager.getMemorySegment(address)[0]
-
-			if segmentString == "global":
+			if context == "global":
 				# Save the result in global memory
-				self.globalMemory.saveResultGlobal(result, address)
-			elif segmentString == "local":
+				self.currentScope.saveResultGlobal(result, address)
+			elif context == "local":
 				# Save the result in local memory
-				self.currentMemory.saveResultLocal(result, address)
-			elif segmentString == "temporal":
+				self.currentScope.saveResultLocal(result, address)
+			elif context == "temporal":
 				# Save the result in temporal memory
-				self.currentMemory.saveResultTemporal(result, address)
+				self.currentScope.saveResultTemporal(result, address)
 
 	def executeInstructions(self, quadruples):
 		self.totalQuad = len(quadruples)
 
 		lastAddress = None
 
-		while self.counterQuad < self.totalQuad:
+		while self.counterQuad <= self.totalQuad:
 			# Obtain quadruple to execute and the operator
-			exeQuadruple = quadruples[self.counterQuad]
+			exeQuadruple = quadruples[self.counterQuad - 1]
 			leftOpd = exeQuadruple.opd1
 			rightOpd = exeQuadruple.opd2
 			operator = exeQuadruple.opt
 			resultAddress = exeQuadruple.result
 
 
+
+			# ASSIGNMENT OPERATOR
+			if operator == '=':
+				# Retrieve only left value of quadruple, and save it in result
+				leftValue = self.getValueAt(leftOpd, resultAddress, operator)
+				self.saveResultAt(leftValue, resultAddress)
 			# ARITHMETIC OPERATORS
-			if operator == '+':
+			elif operator == '+':
 				# Retrive values of both operands, and save result and resultAddress
 				leftValue = self.getValueAt(leftOpd, resultAddress, operator)
 				rightValue = self.getValueAt(rightOpd, resultAddress, operator)
@@ -189,12 +224,83 @@ class virtualMachine():
 				leftValue = self.getValueAt(leftOpd, resultAddress, operator)
 				rightValue = self.getValueAt(rightOpd, resultAddress, operator)
 				self.saveResultAt(leftValue or rightValue, resultAddress)
+			# CONDITIONAL OPERATORS
+			elif operator == 'Goto':
+				# Change the current counterQuad to the resultAddress - 1, which in this case is
+				# just a number of quadruple. (E.g. 64). Compensate because of increment at the end.
+				self.counterQuad = resultAddress - 1
+			elif operator == 'GotoF':	
+
+				leftValue = self.getValueAt(leftOpd)
+				
+				# Change the current counterQuad to the resultAddress only is is false
+				if leftValue is False:
+					self.counterQuad = resultAddress - 1
+			elif operator == 'END':
+				pass
+			# MODULE OPERATORS
+			elif operator == 'ERA':
+				# Save current context
+				self.contextStack.append(self.currentScope)
+
+				# Create new context
+				self.currentScope = scopeManager("local")
+			elif operator == 'PARAM':
+
+				# The adress here is the adress in which we need to save the leftValue
+				# However, first we need to search the leftoperand in the previous context
+				contextToComeback = copy.copy(self.currentScope)
+				previousContext = copy.copy(self.contextStack[-1])
+
+				# Search for that value in previous context
+				self.currentScope = previousContext
+				# We pass resultAdress just as reference
+				leftValue = self.getValueAt(leftOpd, resultAddress)
+
+				# Change context again and save it in this context
+				self.currentScope = contextToComeback
+				self.saveResultAt(leftValue, resultAddress)
+			elif operator == 'RETURN_ASSIGN':
+				# Save address in which we will save, this address corresponds
+				# to the context that called the function
+				self.returnStack.append(resultAddress)
+			elif operator == 'GOSUB':
+				# Save the quad that we need to comeback later (which is the current)
+				self.jumpReturnStack.append(self.counterQuad);
+				# Change quad to the jump
+				self.counterQuad = resultAddress - 1
+
+			elif operator == 'RETURN':
+				# First, we need to obtain where to save
+				whereToSaveResult = self.returnStack.pop()	
+
+				# We obtain the value of the current function
+				resultOfFunction = self.getValueAt(resultAddress, whereToSaveResult)
+
+
+				# Then we change context
+				previousScope = self.contextStack.pop()
+				self.currentScope = previousScope
+
+				# After changing context, we assign the result
+				self.saveResultAt(resultOfFunction, whereToSaveResult)
+
+				# Then, we can move the pointer back to where we were
+				previousPointer = self.jumpReturnStack.pop()
+				self.counterQuad = previousPointer
+
 
 			# Increase counter by 1
 			self.counterQuad += 1
-			if self.counterQuad == self.totalQuad:
-				lastAddress = resultAddress
 
 		# Print result at last quadruple
-		finalResult = self.getValueAt(lastAddress, lastAddress)
-		print("FINAL RESULT:", finalResult)
+		finalResult = self.getValueAt('&11000', '&11000')
+		print("FINAL RESULT:", lastAddress, finalResult, self.currentScope.scopeName)
+
+	def printMemory(self):
+		print("GLOBAL MEMORY")
+		self.currentScope.globalMemory.printDirectory()
+		print("LOCAL MEMORY")
+		self.currentScope.localMemory.printDirectory()
+		print("TEMPORAL MEMORY")
+		self.currentScope.temporalMemory.printDirectory()

@@ -50,9 +50,11 @@ TOK_RETURN : 'return';
 TOK_ID : [a-zA-Z0-9]+;
 ESPACIOS : [ \n\t\r] -> skip;
 
-
 programa: 
-	TOK_PROGRAM TOK_ID TOK_SEMICOLON (classes)? (variables)? (routines)? restOfProgram;
+	TOK_PROGRAM TOK_ID TOK_SEMICOLON (classes)? (variables)? neuro_jump_main (routines)? restOfProgram;
+
+neuro_jump_main:
+;
 
 restOfProgram:
     main;
@@ -142,7 +144,7 @@ neuro_while_end:
 ;
 
 input_:
-    TOK_READ TOK_LPAREN STRING TOK_COMMA TOK_ID TOK_RPAREN TOK_SEMICOLON;
+    TOK_READ TOK_LPAREN expressions TOK_COMMA TOK_ID TOK_RPAREN TOK_SEMICOLON;
 
 output:
 	TOK_WRITE TOK_LPAREN expressions neuro_getOutput (output_recursive)? neuro_finishOutput TOK_RPAREN TOK_SEMICOLON;

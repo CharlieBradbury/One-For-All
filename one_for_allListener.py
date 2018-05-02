@@ -672,5 +672,3 @@ class one_for_allListener(ParseTreeListener):
     # Exit a parse tree produced by one_for_allParser#evaluate_array.
     def exitEvaluate_array(self, ctx:one_for_allParser.Evaluate_arrayContext):
         pass
-
-

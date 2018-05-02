@@ -1,5 +1,36 @@
 program test01;
 
-main {
-	var a = 10 * 10;
+var int a = 10;
+
+function int fibo(var int N, var int radio2){
+	var int a;
+	var int b;
+	var int r1;
+	var int r2;
+
+	if(N == 0)
+	{
+		return 0;
+	} 
+	else
+	{
+		if(N == 1){
+			return 1;
+		} else
+		{
+			a = N - 1;
+			b = N - 2;
+
+			r1 = fibo(a, radio2);
+			r2 = fibo(b, radio2);
+
+			return r1 + r2;
+		}
+	}
 }
+
+main {
+	var int b = 20;
+
+	b = fibo(b, 8);
+}	

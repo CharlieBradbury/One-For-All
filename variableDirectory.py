@@ -33,11 +33,12 @@ class variableDirectory:
             if variable.name == var_name:
                 return variable
 
+        #self.error.definition(self.error.VARIABLE_NOT_DEFINED, var_name, None)
+
     # Receives a variable as parameter and tries to add it to the directory
-    # If it cannot be added, it displays an error
+    # If it was already in the directory, is just overwrites the variable
     def addVariable(self, variable):
-        if self.directory.get(variable.id, None) is None:
-            self.directory[variable.id] = variable
+        self.directory[variable.id] = variable
     
     #Method that adds multiple variable objects list to the directory
     def addMultipleVariables (self, variables):
