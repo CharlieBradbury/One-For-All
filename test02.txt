@@ -1,16 +1,27 @@
 program test02;
 
 class salute {
-	public var string hello, yellow, lala;
-	public var int yoyo, hallo; 
-	public var Bye lalo;
+	
 	public function string sayHello(var string hola, var string addios, var int fellow) {
 			write("hello");
-		}
+	}
+	
+	private var string hello;
+	private var int yoyo;
+
+	private function string sayNay(var string k){
+	   var bool i;
+	   write("Nay","yey");
+	}
+
+	init(var string t1, var int t2){
+		hello = t1;
+		yoyo = t2;
+	} 
 }
 
 var bool j;
-var int barbara;
+var int barbara = 4 * 5;
 var int drink[3];
 var string drama;
 
@@ -19,12 +30,14 @@ function int HelloBtch(var string bitch1, var string nomas, var int hi, var int 
 	var string que = nomas;
 	barbara = 4 * 3 + 8 * 9;
 	drama = bitch1;
+	write(drama);
 	return contador;
 }
 
 function float area(var int radio, var int radio2){
 	var float contador = 0.0;
 	contador = 3.14 * radio * radio;
+	var salute farewell;
 	return contador;
 }
 
@@ -41,9 +54,14 @@ function string sayGoodbye(var string bitch) {
 main {
 	var string python = "hello";
 	var int hello = 2, hi = 4, bye = 5;
-	
-
+	var salute lalo;
+	var salute jajajjaj;
 	var int dyr[2]; 
+
+	read("HOLA", python);
+
+	lalo = init("hola", 3);
+
 	j = (1 * (2 + 4) * 6 + 10) > 50;
 	if(3*2>2) {
 		write("hi", 3*4);
