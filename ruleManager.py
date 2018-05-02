@@ -174,8 +174,9 @@ class ruleManager(one_for_allListener):
 			print("Error while reading private token, not possible to know if reading variable or method")
 			sys.exit()
 
-	def enterVariable_definition(self, ctx):
+	def exitVariable_definition(self, ctx):
 		try:
+			size = 1;
 			# Obtain type and names of the single or multiple variables associated to that type
 			# E.g: public var int a1, a2;
 			currentType = ctx.data_type().getText()
@@ -183,7 +184,11 @@ class ruleManager(one_for_allListener):
 
 			if ctx.TOK_RBRACKET():
 				dim = 1
-				size = self.opdStack[-1]
+				size = self.opdStack[-1][0]
+
+				if int(size) > 1:
+					addressToSave = self.addressManager.getVirtualAddress(currentType, self.currentScope[0])
+					self.generatesQuadruple('ARRAY_DECLARE', size, None, '&'+str(addressToSave))
 			else:
 				dim = 0
 
@@ -191,7 +196,7 @@ class ruleManager(one_for_allListener):
 				# For each name, create an object variable with such information
 				for var in currentVariables:
 					#Create object
-					newVariable = self.createAddVariable(var.getText(), currentType, dim)
+					newVariable = self.createAddVariable(var.getText(), currentType, dim, size)
 			except:
 				self.error.definition(self.error.VARIABLE_CREATION, '', '')
 
@@ -243,7 +248,7 @@ class ruleManager(one_for_allListener):
 			paramType =  ctx.parameters().data_type().getText()
 
 			#Create object variable for each parameter, always assume is a non array variable
-			tempParam = objVariable(self.addressManager.getVirtualAddress(paramType,self.currentScope[0]), paramName, paramType,0)
+			tempParam = objVariable(self.addressManager.getVirtualAddress(paramType,self.currentScope[0]), paramName, paramType, 1, 0)
 			self.addressManager.updateVirtualAddress(paramType,self.currentScope[0])
 			routineParameters.append(tempParam)
 
@@ -259,7 +264,7 @@ class ruleManager(one_for_allListener):
 				paramType = ctx.parameters().parameters_recursive().data_type(countParameters).getText()
 				paramName = ctx.parameters().parameters_recursive().TOK_ID(countParameters).getText()
  				#Always assume is a non array variable
-				tempParam = objVariable(self.addressManager.getVirtualAddress(paramType,self.currentScope[0]), paramName, paramType,0)
+				tempParam = objVariable(self.addressManager.getVirtualAddress(paramType,self.currentScope[0]), paramName, paramType, 1, 0)
 				self.addressManager.updateVirtualAddress(paramType,self.currentScope[0])
 				routineParameters.append(tempParam)
 				'''CHECK PARAMETERS NOT WORKING WITH ARRAYS'''
@@ -316,6 +321,16 @@ class ruleManager(one_for_allListener):
 	def exitAssignment(self,ctx):
 		#Consult name of the variable that its going to be assigned
 		name = ctx.id_().getText()
+		isArray = False
+
+
+		# Check if is an array
+		if "[" in name:
+			beginArrayPos = name.find("[")
+			arrayName = name[:beginArrayPos]
+			name = arrayName
+			isArray = True
+
 		#IF IT DOES NOT FIND THE VARIABLE IN LOCAL TRY IN GLOBAL
 		#Verify that the name exists in the variable table
 		variable = ''
@@ -333,9 +348,14 @@ class ruleManager(one_for_allListener):
 
 			val = self.opdStack.pop()
 			#Create quadruple
+
 			self.generatesQuadruple('=',val, variable, None)
 		except:
-			pass
+			sys.exit()
+
+	def exitEvaluate_array(self, ctx):
+		result = self.opdStack.pop()
+		self.generatesQuadruple('ARRAY_POS', result, result, None)
 
 	def exitVariable_assign(self, ctx):
 		#Can declare and assign values to multiple variables
@@ -343,6 +363,7 @@ class ruleManager(one_for_allListener):
 			#Get the name of the variable
 			name = self.variableStack.pop()
 			variable = ''
+
 			#Verify that the name exists in the variable table
 			try:
 				if self.currentScope[0] == "local":
@@ -532,6 +553,10 @@ class ruleManager(one_for_allListener):
 			self.quadruplesList.append(resultQuadruple)
 		elif operator == 'RETURN':
 			resultQuadruple = quadruples(self.counter, operator, None, None,result[0])
+			self.counter += 1
+			self.quadruplesList.append(resultQuadruple)
+		elif operator == 'ARRAY_DECLARE':
+			resultQuadruple = quadruples(self.counter, operator, left, None, result)
 			self.counter += 1
 			self.quadruplesList.append(resultQuadruple)
 		else:
@@ -749,7 +774,7 @@ class ruleManager(one_for_allListener):
 		for quadruple in self.quadruplesList:
 			print(quadruple.id, quadruple.opt, quadruple.opd1, quadruple.opd2, quadruple.result)
 
-	def createAddVariable(self, name, data_type, dimensions):
+	def createAddVariable(self, name, data_type, dimensions, size=1):
 		if self.isPartOfClass:
 			# Set current privacy of the group of variables
 			currentPrivacy = "public" if self.isPublic else "private"
@@ -766,8 +791,11 @@ class ruleManager(one_for_allListener):
 			# Else, this variable is not associated with a class and we need to create a objVariable object
 			# and add it directly to the global variables directory
 
-			newVariable = objVariable(self.addressManager.getVirtualAddress(data_type, self.currentScope[0]), name, data_type, dimensions)
-			self.addressManager.updateVirtualAddress(data_type, self.currentScope[0])
+			newVariable = objVariable(self.addressManager.getVirtualAddress(data_type, self.currentScope[0]), name, data_type, dimensions, size)
+			newVariable.setSize()
+
+			self.addressManager.updateVirtualAddress(data_type, self.currentScope[0], newVariable.size)
+
 			if self.currentScope[0] == "global":
 				self.varDirectory.addVariable(newVariable)
 			else:

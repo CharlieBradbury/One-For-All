@@ -25,6 +25,9 @@ class virtualMachine():
 		# For managing multipe contexts
 		self.contextStack = []
 
+		# Array stack
+		self.offSetStack = []
+
 	def parseVariable(self, variable):
 		variableType = variable.data_type;
 		variableUnparsedValue = variable.value;
@@ -114,7 +117,11 @@ class virtualMachine():
 			elif context == "temporal":
 				# Search for that id in temporalMemory
 				foundVariable = self.currentScope.searchTemporalAddress(address)
-			return foundVariable
+
+			if foundVariable is not None:
+				return foundVariable.value
+			else:
+				return None
 		elif operator is not None:
 			# If not, then is a constant and we can return such value
 			cleanResult = self.parseConstantWithOperator(constantOrAddress, resultAddress, operator)
@@ -126,7 +133,6 @@ class virtualMachine():
 		
 	# Receives a value and an address to save that result at
 	def saveResultAt(self, result, address):	
-
 			# Then its an address, we need to search for it in the proper variable table
 			address = address.replace("&", "")
 			context = self.currentScope.adManager.getMemorySegment(address)[0]
@@ -288,10 +294,16 @@ class virtualMachine():
 				# Then, we can move the pointer back to where we were
 				previousPointer = self.jumpReturnStack.pop()
 				self.counterQuad = previousPointer
-
+			elif operator == 'ARRAY_POS':
+				offSetValue = self.getValueAt(resultAddress)
+				self.offSetStack.append(offSetValue)
+			elif operator == 'ARRAY_DECLARE':
+				# Create array
+				pass
 
 			# Increase counter by 1
 			self.counterQuad += 1
+
 
 		# Print result at last quadruple
 		finalResult = self.getValueAt('&11000', '&11000')

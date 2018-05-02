@@ -4,4 +4,3 @@ class arrayManager():
         lim_inf = lim_inf
         lim_sup = lim_sup
         m = m
-        
