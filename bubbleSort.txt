@@ -1,0 +1,51 @@
+program bubbleSort;
+
+var int arrayPrueba[10];
+
+main {
+	var int cant = 10;
+	var int i = 0;
+
+	var int swapped = 1;
+	var int aux = 0;
+
+	var int elemUno = 0;
+	var int elemDos = 0;
+
+	arrayPrueba[0] = 28;
+	arrayPrueba[1] = 10;
+	arrayPrueba[2] = 5;
+	arrayPrueba[3] = 1;
+	arrayPrueba[4] = 7;
+	arrayPrueba[5] = 6;
+	arrayPrueba[6] = 55;
+	arrayPrueba[7] = 10;
+	arrayPrueba[8] = 2;
+	arrayPrueba[9] = 15;
+
+	while(swapped == 1)
+	{
+		swapped = 0;
+		i = 0;
+
+		while(i < cant - 1)
+		{
+			if(arrayPrueba[i] < arrayPrueba[i + 1])
+			{
+				aux = arrayPrueba[i];
+				arrayPrueba[i] = arrayPrueba[i + 1];
+				arrayPrueba[i + 1] = aux;
+				swapped = 1;
+			}
+			i = i + 1;
+		}	
+	}
+
+	i = 0;
+
+	while(i < cant)
+	{
+		write(arrayPrueba[i]);
+		i = i + 1;
+	}
+}	

@@ -1,0 +1,37 @@
+program fibIterative;
+
+var int fibo[100];
+
+main {
+	var int resultado = 0;
+	var int fiboLimite = 20;
+	var int counter = 2;
+	var int fiboAnt = 0;
+	var int fiboAntAnt = 0;
+
+	fibo[0] = 0;
+	fibo[1] = 1;
+
+	if (fiboLimite == 0)
+	{
+		resultado = fibo[0];
+	}
+
+	if (fiboLimite == 1)
+	{
+		resultado = fibo[1];
+	}
+
+	while(counter <= fiboLimite)
+	{
+		fiboAntAnt = fibo[counter - 2];
+		fiboAnt = fibo[counter - 1];
+
+		fibo[counter] = fiboAntAnt + fiboAnt;
+
+		counter = counter + 1;
+	}
+
+	resultado = fibo[fiboLimite];
+	write(resultado);
+}	

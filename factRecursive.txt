@@ -1,0 +1,26 @@
+program factRecursive;
+
+function int factorial(var int N, var int prueba)
+{
+	var int factAnt = 0;
+	var int nAnt = 0;
+
+	if(N == 1)
+	{
+		return 1;
+	}
+	else
+	{	
+		nAnt = N - 1;
+		factAnt = factorial(nAnt, prueba);
+		return N * factAnt;
+	}
+
+}
+
+main {
+	var int resultado = 0;
+
+	resultado = factorial(10, 100);
+	write(resultado);
+}	

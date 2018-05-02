@@ -129,6 +129,8 @@ class ruleManager(one_for_allListener):
 		#Global variable to identify objects
 		self.isObject = False
 
+		self.nameOfFile = "program.ofa"
+
 	#------------------------------------------------------
 	# 	CLASS, FUNCTIONS AND VARIABLES
 	#-----------------------------------------------------
@@ -327,7 +329,7 @@ class ruleManager(one_for_allListener):
 
 	def exitRestOfProgram(self, ctx):
 		self.generatesQuadruple('END',None, None, None)
-		self.printQuadruples()
+		#self.printQuadruples()
 		'''
 		print("------GLOBAL VARIABLES-----")
 		for key, var in self.varDirectory.directory.items():
@@ -338,13 +340,17 @@ class ruleManager(one_for_allListener):
 			func.localVars.printDirectory()
 		'''
 
-		self.printClassDictionary()
-		self.objects.printDirectory()
+		#self.printClassDictionary()
+		#self.objects.printDirectory()
 
-		# Create and run virtual machine
-		vMachine = virtualMachine()
-		vMachine.currentScope = scopeManager("local")
-		vMachine.executeInstructions(self.quadruplesList)
+		# Create text file with quadruples
+		file = open(self.nameOfFile, "w")
+		for quadruple in self.quadruplesList:
+			quadString = (str(quadruple.id), str(quadruple.opt), str(quadruple.opd1), str(quadruple.opd2), str(quadruple.result))
+			separator = " "
+			stringComplete = separator.join(quadString)
+			file.write(stringComplete + '\n')
+		file.close() 
 
 	#------------------------------------------------------
 	# QUADRUPLES
@@ -759,7 +765,7 @@ class ruleManager(one_for_allListener):
 	# CODE ACTIONS FOR MODULE CALL
 	def enterEvaluate_function(self, ctx):
 		name = ctx.TOK_ID().getText()
-		print(name)
+		#print(name)
 		number = ctx.expressions()
 		#Check if the function exists in the function directory
 		if self.funcDirectory.checkFunction(name):
@@ -894,8 +900,8 @@ class ruleManager(one_for_allListener):
 	#----------------------------------------------
 	#	INPUT
 	#----------------------------------------------
-	def enterInput_(self, ctx):
-		val = ctx.STRING().getText()
+	def exitInput_(self, ctx):
+		val = ctx.expressions().getText()
 		input_val = (val, "string")
 		name = ctx.TOK_ID().getText()
 		#Check if variable exists in current context

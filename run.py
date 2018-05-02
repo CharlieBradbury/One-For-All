@@ -16,18 +16,15 @@ from one_for_allLexer import one_for_allLexer
 from one_for_allParser import one_for_allParser
 from one_for_allListener import one_for_allListener
 from ruleManager import ruleManager
+from virtualMachine import virtualMachine
 
 def main(argv):
-	input = FileStream(argv[1])
-	lexer = one_for_allLexer(input)
-	stream = CommonTokenStream(lexer)
-	parser = one_for_allParser(stream)
+	input = argv[1]
+	fileName = str(input)
 
-	tree = parser.programa()
-	walker = ParseTreeWalker()
-	oneforAll = ruleManager()
-
-	walker.walk(oneforAll, tree)
+	# Create and run virtual machine
+	vMachine = virtualMachine(fileName)
+	vMachine.run()
 
 if __name__ == '__main__':
 	main(sys.argv)
