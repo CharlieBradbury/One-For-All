@@ -1,9 +1,10 @@
 from addressManager import addressManager
 from scopeManager import scopeManager
+from quadruples import quadruples
 import copy
 
 class virtualMachine():
-	def __init__(self):
+	def __init__(self, nameOfFile):
 		# Total of quadruples
 		self.totalQuad = None
 		# Counter of the current quads to execute and actual quad to execute
@@ -11,7 +12,7 @@ class virtualMachine():
 		self.exeQuadruple = None
 
 		# Current memory (changes depending on the context), receives and object of type scopeManager
-		self.currentScope = None
+		self.currentScope = currentScope = scopeManager("local")
 
 		self.adManager = addressManager()
 
@@ -28,6 +29,29 @@ class virtualMachine():
 		# Array stack
 		self.offSetStack = []
 
+		# Print list
+		self.printList = []
+
+		# List of quadruples
+		self.quadruples = []
+
+		# Name of file to read
+		self.nameOfFile = nameOfFile
+	
+	def run(self):
+		lines = [line.rstrip('\n') for line in open(self.nameOfFile)]
+
+		for stringQuad in lines:
+			listQuad = stringQuad.split(" ")
+			newQuad = quadruples(listQuad[0], listQuad[1], listQuad[2], listQuad[3], listQuad[4])
+			self.quadruples.append(newQuad)
+
+		self.executeInstructions()
+
+	def printQuadruples(self):
+		for quadruple in self.quadruples:
+			print(quadruple.id, quadruple.opt, quadruple.opd1, quadruple.opd2, quadruple.result)
+			
 	def parseVariable(self, variable):
 		variableType = variable.data_type;
 		variableUnparsedValue = variable.value;
@@ -52,7 +76,7 @@ class virtualMachine():
 
 		if constantString[0] == "\"":
 			# Then is a string
-			parseValue = constantString
+			parsedValue = constantString
 		else:
 			# Get type of operator and of the result (based on its address number)
 			operatorType = self.adManager.typeOfOperator(operator)
@@ -80,7 +104,7 @@ class virtualMachine():
 		
 		if constantString[0] == "\"":
 			# Then is a string
-			parseValue = constantString
+			parsedValue = constantString
 		else:
 			# Get type of operator and of the result (based on its address number)
 			resultType = self.adManager.getMemorySegment(resultAddress.replace("&", ""))[1]
@@ -159,14 +183,14 @@ class virtualMachine():
 				# Save the result in temporal memory
 				self.currentScope.saveResultTemporal(result, address)
 
-	def executeInstructions(self, quadruples):
-		self.totalQuad = len(quadruples)
+	def executeInstructions(self):
+		self.totalQuad = len(self.quadruples)
 
 		lastAddress = None
 
 		while self.counterQuad <= self.totalQuad:
 			# Obtain quadruple to execute and the operator
-			exeQuadruple = quadruples[self.counterQuad - 1]
+			exeQuadruple = self.quadruples[self.counterQuad - 1]
 			leftOpd = exeQuadruple.opd1
 			rightOpd = exeQuadruple.opd2
 			operator = exeQuadruple.opt
@@ -246,14 +270,14 @@ class virtualMachine():
 			elif operator == 'Goto':
 				# Change the current counterQuad to the resultAddress - 1, which in this case is
 				# just a number of quadruple. (E.g. 64). Compensate because of increment at the end.
-				self.counterQuad = resultAddress - 1
+				self.counterQuad = int(resultAddress) - 1
 			elif operator == 'GotoF':	
 
 				leftValue = self.getValueAt(leftOpd)
 				
 				# Change the current counterQuad to the resultAddress only is is false
 				if leftValue is False:
-					self.counterQuad = resultAddress - 1
+					self.counterQuad = int(resultAddress) - 1
 			elif operator == 'END':
 				pass
 			# MODULE OPERATORS
@@ -286,7 +310,7 @@ class virtualMachine():
 				# Save the quad that we need to comeback later (which is the current)
 				self.jumpReturnStack.append(self.counterQuad);
 				# Change quad to the jump
-				self.counterQuad = resultAddress - 1
+				self.counterQuad = int(resultAddress) - 1
 
 			elif operator == 'RETURN':
 				# First, we need to obtain where to save
@@ -312,16 +336,17 @@ class virtualMachine():
 			elif operator == 'ARRAY_DECLARE':
 				# Create array
 				self.saveResultAt(None, resultAddress, int(leftOpd))
-
-
+			elif operator == 'WRITE':
+				result = self.getValueAt(resultAddress)
+				print(result)
+			elif operator == 'END_WRITE':
+				pass
+			elif operator == 'READ':
+				leftValue = self.getValueAt(leftOpd)
+				self.saveResultAt(leftValue, resultAddress)
 
 			# Increase counter by 1
 			self.counterQuad += 1
-
-
-		# Print result at last quadruple
-		finalResult = self.getValueAt('&11000', '&11000')
-		print("FINAL RESULT:", lastAddress, finalResult, self.currentScope.scopeName)
 
 	def printMemory(self):
 		print("GLOBAL MEMORY")

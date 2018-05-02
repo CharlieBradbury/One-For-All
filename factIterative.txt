@@ -1,0 +1,14 @@
+program factIterative;
+
+main {
+	var int N = 10;
+	var int resultado = 1;
+	var int i = 1;
+
+	while(i <= N)
+	{
+		resultado = (resultado * i);
+		i = i + 1;
+	}
+	write(resultado);
+}	

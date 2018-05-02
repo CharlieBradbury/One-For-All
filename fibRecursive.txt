@@ -1,0 +1,36 @@
+program fibRecursive;
+
+function int fibo(var int fiboLimite, var int prueba){
+	var int fiboLimiteAnt;
+	var int fiboLimiteAntAnt;
+	var int fiboAnt;
+	var int	fiboAntAnt;
+
+	if(fiboLimite == 0)
+	{
+		return 0;
+	} 
+	else
+	{
+		if(fiboLimite == 1){
+			return 1;
+		} else
+		{
+			fiboLimiteAnt = fiboLimite - 1;
+			fiboLimiteAntAnt = fiboLimite - 2;
+
+			fiboAnt = fibo(fiboLimiteAnt, prueba);
+			fiboAntAnt = fibo(fiboLimiteAntAnt, prueba);
+
+			return fiboAnt + fiboAntAnt;
+		}
+	}
+}
+
+main {
+	var int resultado = 0;
+	var int fiboLimite = 20;
+
+	resultado = fibo(fiboLimite, 100);
+	write(resultado);
+}	
