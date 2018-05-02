@@ -1,5 +1,5 @@
-'''
 import sys
+import os
 from antlr4 import *
 from collections import OrderedDict
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -24,9 +24,9 @@ from scopeManager import scopeManager
 from addressManager import addressManager
 from virtualMachine import virtualMachine
 from errorHandler import errorHandler
-'''
 
-import sys
+
+'''import sys
 from antlr4 import *
 from collections import OrderedDict
 from one_for_allLexer import one_for_allLexer
@@ -46,7 +46,7 @@ from semanticCube import semanticCube
 from scopeManager import scopeManager
 from addressManager import addressManager
 from virtualMachine import virtualMachine
-from errorHandler import errorHandler
+from errorHandler import errorHandler'''
 
 class ruleManager(one_for_allListener):
 
@@ -127,14 +127,6 @@ class ruleManager(one_for_allListener):
 
 		#Global variable to identify objects
 		self.isObject = False
-	
-		#------------------------------------------------------
-		#	CREATE FIRST QUADRUPLE
-		#   Goto to the main method
-		#-----------------------------------------------------
-		self.generatesQuadruple('Goto', None, None, None)
-		self.jumpStack.append(('Main',self.counter - 1))
-
 
 	#------------------------------------------------------
 	# 	CLASS, FUNCTIONS AND VARIABLES

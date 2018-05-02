@@ -17,6 +17,15 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by one_for_allParser#neuro_jump_main.
+    def enterNeuro_jump_main(self, ctx:one_for_allParser.Neuro_jump_mainContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_jump_main.
+    def exitNeuro_jump_main(self, ctx:one_for_allParser.Neuro_jump_mainContext):
+        pass
+
+
     # Enter a parse tree produced by one_for_allParser#restOfProgram.
     def enterRestOfProgram(self, ctx:one_for_allParser.RestOfProgramContext):
         pass
@@ -672,3 +681,5 @@ class one_for_allListener(ParseTreeListener):
     # Exit a parse tree produced by one_for_allParser#evaluate_array.
     def exitEvaluate_array(self, ctx:one_for_allParser.Evaluate_arrayContext):
         pass
+
+
