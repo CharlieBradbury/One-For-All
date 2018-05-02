@@ -301,6 +301,7 @@ class ruleManager(one_for_allListener):
 	def exitRestOfProgram(self, ctx):
 		self.generatesQuadruple('END',None, None, None)
 		self.printQuadruples()
+		'''
 		print("------GLOBAL VARIABLES-----")
 		for key, var in self.varDirectory.directory.items():
 			var.printVariable()
@@ -308,7 +309,7 @@ class ruleManager(one_for_allListener):
 		for key, func in self.funcDirectory.directory.items():
 			func.printFunction()
 			func.localVars.printDirectory()
-
+		'''
 		# Create and run virtual machine
 		vMachine = virtualMachine()
 		vMachine.currentScope = scopeManager("local")
@@ -577,9 +578,17 @@ class ruleManager(one_for_allListener):
 		quad = list(filter(lambda x: x.id == id, self.quadruplesList))
 		quad[0].result = cont
 
+	# VUELVE AQUI
 	def enterConstant(self, ctx):
 		try:
 			name = ctx.id_().getText()
+
+			# Check if is an array
+			if "[" in name:
+				beginArrayPos = name.find("[")
+				arrayName = name[:beginArrayPos]
+				name = arrayName
+
 			variable = ''
 			#Verify that the name exists in the variable table
 			if self.currentScope[0] == "local":

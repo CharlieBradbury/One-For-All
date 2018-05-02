@@ -17,6 +17,7 @@ TOK_CLASS : 'class';
 TOK_PRIVATE : 'private';
 TOK_PUBLIC : 'public';
 TOK_MAIN : 'main';
+TOK_INIT : 'init';
 TOK_READ : 'read';
 TOK_FUNCTION : 'function';
 TOK_WRITE :'write';
@@ -62,7 +63,7 @@ classes:
     (class_definition)+;
 
 class_definition:
-	TOK_CLASS TOK_ID inheritance TOK_LBRACE (class_public)? (class_private)? TOK_RBRACE;
+	TOK_CLASS TOK_ID inheritance TOK_LBRACE (class_public)? (class_private)? constructor TOK_RBRACE;
 
 inheritance:
     (TOK_COLON TOK_ID)?;
@@ -72,6 +73,9 @@ class_public:
 
 class_private:
      (TOK_PRIVATE variables | TOK_PRIVATE routines)+;
+
+constructor:
+	TOK_INIT TOK_LPAREN (parameters)? TOK_RPAREN block;
 
 routines:
     (routine_definition)+;
@@ -83,9 +87,12 @@ parameters:
     TOK_VAR data_type TOK_ID (TOK_LBRACKET expressions neuro_array TOK_RBRACKET)? parameters_recursive;
 
 parameters_recursive:
-    (TOK_COMMA  TOK_VAR data_type TOK_ID (TOK_LBRACKET expressions neuro_array TOK_RBRACKET)?)*;
+    (TOK_COMMA  TOK_VAR neuroparam_rec data_type TOK_ID (TOK_LBRACKET expressions neuro_array TOK_RBRACKET)?)*;
 
 neuro_array:
+;
+
+neuroparam_rec:
 ;
 
 variables:
@@ -140,7 +147,16 @@ input_:
     TOK_READ TOK_LPAREN expressions TOK_COMMA TOK_ID TOK_RPAREN TOK_SEMICOLON;
 
 output:
-	TOK_WRITE TOK_LPAREN expressions TOK_RPAREN TOK_SEMICOLON;
+	TOK_WRITE TOK_LPAREN expressions neuro_getOutput (output_recursive)? neuro_finishOutput TOK_RPAREN TOK_SEMICOLON;
+	
+output_recursive:
+	(TOK_COMMA expressions neuro_getOutput)+;
+	
+neuro_getOutput:
+;
+	
+neuro_finishOutput:
+;
 
 condition_else:
     (neuro_else TOK_ELSE block)?;
@@ -236,7 +252,16 @@ id_:
 	(id_definition_)+;
 
 id_definition_:
-    TOK_ID | evaluate_class | evaluate_function | evaluate_array;
+	TOK_ID | evaluate_class | evaluate_function | evaluate_array | init_class;
+	
+init_class:
+	TOK_ID TOK_EQUAL TOK_INIT TOK_LPAREN (expressions neuro_initEval (TOK_COMMA)?)* neuro_createConstructor TOK_RPAREN TOK_SEMICOLON;
+	
+neuro_initEval:
+;
+
+neuro_createConstructor:
+;
 
 evaluate_class:
 	TOK_ID TOK_DOT TOK_ID(TOK_LPAREN expressions TOK_RPAREN)?;

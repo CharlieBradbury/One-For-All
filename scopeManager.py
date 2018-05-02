@@ -57,29 +57,27 @@ class scopeManager():
 		self.localMemory.addVariable(tempVariable)
 
 	# Searchs temporal variable and returns its value
-	def searchGlobalAddress(self, address, offset=-1):
+	def searchGlobalAddress(self, address):
 		if(self.globalMemory.checkVariableById(address)):
 			return self.globalMemory.getVariableById(address)
 		else:
 			return None
 		
 	# Saves the result of a temporal variable in an adress
-	def saveResultGlobal(self, resultValue, address, offset=-1):
-		print("AAAAAAA", resultValue, address, offset)
+	def saveResultGlobal(self, resultValue, address, offSet=-1):
 		typeString = str(type(resultValue))
 		varFound = self.searchGlobalAddress(address)
 
-		if offset > -1:
+		if offSet > -1:
 			if varFound is None:
 				# Then the variable does not exist and we create it
-				resultArray = [None] * (offset + 1) 
+				resultArray = [None] * (offSet + 1) 
 			else:
 				# Modify specific element
 				resultArray = varFound.value
-				resultArray[offset] = resultValue
-				print("my show", resultArray)
+				resultArray[offSet] = resultValue
 
-			resultArray[offset] = resultValue
+			resultArray[offSet] = resultValue
 			tempVariable = objVariable(address, "globalVariable", typeString, 0, 1, resultArray)
 			self.globalMemory.addVariable(tempVariable)
 		else:

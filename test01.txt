@@ -1,12 +1,11 @@
 program test01;
 
-var int drink[3];
-var int algo;
-var int pepito[30];
-var int juan;
+var int arrayPrueba[10];
 
 main {
-	var int b = 20;
-
-	drink[1] = 3;
+	var int resultado = 0;
+	var int i = 0;
+	var int j = 0;
+	var int cant = 0;
+	
 }	

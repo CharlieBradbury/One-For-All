@@ -109,9 +109,7 @@ class virtualMachine():
 			foundVariable = None
 
 			if context == "global":
-				# Search for that id in globalMemory
-				if self.currentScope.isArrayGlobal(address):
-					print("DOBLE MAMALON")
+				# Search for that id in globalMemory	i
 				foundVariable = self.currentScope.searchGlobalAddress(address)
 			elif context == "local":
 				# Search for that id in localMemory
@@ -120,10 +118,16 @@ class virtualMachine():
 				# Search for that id in temporalMemory
 				foundVariable = self.currentScope.searchTemporalAddress(address)
 
+			valueToReturn = None
+
 			if foundVariable is not None:
-				return foundVariable.value
-			else:
-				return None
+				if self.currentScope.isArrayGlobal(address):
+					offSet = self.offSetStack.pop()
+					valueToReturn = foundVariable.value[offSet]
+				else:
+					valueToReturn = foundVariable.value
+
+			return valueToReturn
 		elif operator == 'ARRAY_POS':
 			cleanResult = int(constantOrAddress)
 			return cleanResult
@@ -146,9 +150,7 @@ class virtualMachine():
 				if self.currentScope.isArrayGlobal(address):
 					# Retrieve array number
 					offSet = self.offSetStack.pop()
-					print("AKI", address, context, offSet)
 				# Save the result in global memory
-				print("SI", result, address, offSet)
 				self.currentScope.saveResultGlobal(result, address, offSet)
 			elif context == "local":
 				# Save the result in local memory
@@ -318,7 +320,7 @@ class virtualMachine():
 
 
 		# Print result at last quadruple
-		finalResult = self.getValueAt('&1000', '&1000')
+		finalResult = self.getValueAt('&11000', '&11000')
 		print("FINAL RESULT:", lastAddress, finalResult, self.currentScope.scopeName)
 
 	def printMemory(self):
