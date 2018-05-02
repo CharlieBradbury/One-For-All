@@ -1,6 +1,6 @@
 program fibIterative;
 
-var int fibo[100];
+
 
 main {
 	var int resultado = 0;
@@ -8,6 +8,7 @@ main {
 	var int counter = 2;
 	var int fiboAnt = 0;
 	var int fiboAntAnt = 0;
+	var int fibo[100];	
 
 	fibo[0] = 0;
 	fibo[1] = 1;

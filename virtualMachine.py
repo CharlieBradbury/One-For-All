@@ -154,7 +154,7 @@ class virtualMachine():
 			valueToReturn = None
 
 			if foundVariable is not None:
-				if self.currentScope.isArrayGlobal(address):
+				if self.currentScope.isArrayGlobal(address)  or self.currentScope.isArrayLocal(address):
 					offSet = self.offSetStack.pop()
 					valueToReturn = foundVariable.value[offSet]
 				else:
@@ -186,8 +186,11 @@ class virtualMachine():
 				# Save the result in global memory
 				self.currentScope.saveResultGlobal(result, address, offSet)
 			elif context == "local":
-				# Save the result in local memory
-				self.currentScope.saveResultLocal(result, address)
+				if self.currentScope.isArrayLocal(address):
+					# Retrieve array number
+					offSet = self.offSetStack.pop()
+				# Save the result in global memory
+				self.currentScope.saveResultLocal(result, address, offSet)
 			elif context == "temporal":
 				# Save the result in temporal memory
 				self.currentScope.saveResultTemporal(result, address)
