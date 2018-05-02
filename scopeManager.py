@@ -51,10 +51,26 @@ class scopeManager():
 			return None
 		
 	# Saves the result of a temporal variable in an adress
-	def saveResultLocal(self, resultValue, address):
+	def saveResultLocal(self, resultValue, address, offSet=-1):
 		typeString = str(type(resultValue))
-		tempVariable = objVariable(address, "localVariable", typeString, 0, 1, resultValue)
-		self.localMemory.addVariable(tempVariable)
+		varFound = self.searchLocalAddress(address)
+
+		if offSet > -1:
+			if varFound is None:
+				# Then the variable does not exist and we create it
+				resultArray = [None] * (offSet + 1) 
+			else:
+				# Modify specific element
+				resultArray = varFound.value
+				resultArray[offSet] = resultValue
+
+			resultArray[offSet] = resultValue
+			tempVariable = objVariable(address, "localVariable", typeString, 0, 1, resultArray)
+			self.localMemory.addVariable(tempVariable)
+		else:
+			# Variabe is simple
+			tempVariable = objVariable(address, "localVariable", typeString, 0, 1, resultValue)
+			self.localMemory.addVariable(tempVariable)
 
 	# Searchs temporal variable and returns its value
 	def searchGlobalAddress(self, address):
@@ -94,9 +110,11 @@ class scopeManager():
 		else:
 			return isinstance(foundVariable.value, list)
 
-		
+	def isArrayLocal(self, address):
+		# Get array with such address
+		foundVariable = self.searchLocalAddress(address)
 
-
-		
-
-
+		if foundVariable is None:
+			return False
+		else:
+			return isinstance(foundVariable.value, list)
