@@ -63,10 +63,13 @@ classes:
     (class_definition)+;
 
 class_definition:
-	TOK_CLASS TOK_ID inheritance TOK_LBRACE (class_public)? (class_private)? constructor TOK_RBRACE;
+	TOK_CLASS TOK_ID (inheritance)? TOK_LBRACE (class_public)? (class_private)? constructor TOK_RBRACE;
 
 inheritance:
-    (TOK_COLON TOK_ID)?;
+    TOK_COLON TOK_ID neuro_inheritance;
+
+neuro_inheritance:
+;
 
 class_public:
     (TOK_PUBLIC variables | TOK_PUBLIC routines)+;

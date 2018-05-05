@@ -1,33 +1,17 @@
 #Create object to store elements of a class
+from classVariable import classVariable
+from classMethod import classMethod
+
 class objClass():
 	def __init__(self, id, name, parent="NoParent"):
 		self.id = id
 		self.name = name
 		self.parent = parent
 
-		# Variables
-		self.publicVariables = dict()
-		self.publicMethods = dict()
+		# Variables and methods
+		self.variableClassDirectory = {}
+		self.methodsClassDirectory = {}
 
-		# Methods
-		self.privateVariables = dict()
-		self.privateMethods = dict()
-	
-	# Add public variable
-	def addPublicVariable(self, objVar):
-		self.publicVariables[objVar.name] = objVar
-
-	# Add public method
-	def addPublicMethod(self, objMethod):
-		self.publicMethods[objMethod.name] = objMethod
-	
-	# Add private variable
-	def addPrivateVariable(self, objVar):
-		self.privateVariables[objVar.name] = objVar
-
-	# Add private method
-	def addPrivateMethod(self, objMethod):
-		self.privateMethods[objMethod.name] = objMethod
 
 	def printClass(self):
 		try:
