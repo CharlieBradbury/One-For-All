@@ -1,5 +1,5 @@
-'''
 import sys
+import os
 from antlr4 import *
 from collections import OrderedDict
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -9,11 +9,14 @@ from parser.one_for_allListener import one_for_allListener
 
 from objFunction import objFunction
 from objVariable import objVariable
-from objClass import *
+from classVariable import classVariable
+from objectO import objectO
+from classMethod import *
+from objClass import objClass
 from variableDirectory import variableDirectory
 from functionDirectory import functionDirectory
 from classDirectory import classDirectory
-
+from objectDirectory import objectDirectory
 
 from quadruples import quadruples
 from semanticCube import semanticCube
@@ -21,9 +24,9 @@ from scopeManager import scopeManager
 from addressManager import addressManager
 from virtualMachine import virtualMachine
 from errorHandler import errorHandler
-'''
 
-import sys
+
+'''import sys
 from antlr4 import *
 from collections import OrderedDict
 from one_for_allLexer import one_for_allLexer
@@ -47,7 +50,7 @@ from semanticCube import semanticCube
 from scopeManager import scopeManager
 from addressManager import addressManager
 from virtualMachine import virtualMachine
-from errorHandler import errorHandler
+from errorHandler import errorHandler'''
 
 class ruleManager(one_for_allListener):
 
@@ -552,13 +555,20 @@ class ruleManager(one_for_allListener):
 			left_code = self.cube.typeToCode(left_type)
 			right_code = self.cube.typeToCode(right_type)
 			resultType = self.cube.semanticValidation(operator_code, left_code, right_code)
-
 			if resultType != -1:
 				resultQuadruple = quadruples(self.counter,operator, left[0], None, '&'+str(right.id))
 				self.counter += 1
 				self.quadruplesList.append(resultQuadruple)
 			else:
-				print(operator, left_type, right_type)
+				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
+		elif operator == 'READ':
+			left_type = left[1]
+			right_type = right.data_type
+			if left_type == "string" and right_type == "string":
+				resultCuadruple = quadruples(self.counter,operator, left[0], None, '&'+str(right.id))
+				self.counter += 1
+				self.quadruplesList.append(resultCuadruple)
+			else:
 				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
 		elif operator == "PARAM":
 			resultQuadruple = quadruples(self.counter, operator,left[0], None,'&'+ str(result))
