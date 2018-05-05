@@ -153,13 +153,7 @@ class addressManager():
 			elif data_Type == "bool":
 				self.COUNTER_TEMPORALS_BOOLEAN += size
 			elif data_Type == "string":
-<<<<<<< HEAD
 				self.COUNTER_TEMPORALS_STRING += size
-=======
-				self.COUNTER_TEMPORALS_STRING += 1
-			elif data_Type == "obj":
-				self.COUNTER_TEMPORALS_OBJECT += 1
->>>>>>> e15e664e871385dec72a21e2a8b9864ebe4a417f
 		elif scope == "local":
 			if data_Type == "int":
 				self.COUNTER_LOCALS_INT += size
@@ -168,13 +162,7 @@ class addressManager():
 			elif data_Type == "bool":
 				self.COUNTER_LOCALS_BOOLEAN += size
 			elif data_Type == "string":
-<<<<<<< HEAD
 				self.COUNTER_LOCALS_STRING += size
-=======
-				self.COUNTER_LOCALS_STRING += 1
-			elif data_Type == "obj":
-				self.COUNTER_LOCALS_OBJECT += 1
->>>>>>> e15e664e871385dec72a21e2a8b9864ebe4a417f
 		elif scope == "global":
 			if data_Type == "int":
 				self.COUNTER_GLOBALS_INT += size
@@ -183,13 +171,7 @@ class addressManager():
 			elif data_Type == "bool":
 				self.COUNTER_GLOBALS_BOOLEAN += size
 			elif data_Type == "string":
-<<<<<<< HEAD
 				self.COUNTER_GLOBALS_STRING += size
-=======
-				self.COUNTER_GLOBALS_STRING += 1
-			elif data_Type == "obj":
-				self.COUNTER_GLOBALS_OBJECT += 1
->>>>>>> e15e664e871385dec72a21e2a8b9864ebe4a417f
 
 	# Method that returns type of operator
 	def typeOfOperator(self, operator):
