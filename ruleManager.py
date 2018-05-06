@@ -144,6 +144,7 @@ class ruleManager(one_for_allListener):
 		#	CREATE FIRST QUADRUPLE
 		#   Goto to the main method
 		#-----------------------------------------------------
+		self.generatesQuadruple("BEGIN_MAIN", None, None, None)
 		self.generatesQuadruple('Goto', None, None, None)
 		self.jumpStack.append(('Main', self.counter - 1))
 
@@ -167,6 +168,9 @@ class ruleManager(one_for_allListener):
 		className = ctx.TOK_ID().getText()
 		self.currentScope = ("local",className)
 		self.createEmptyClass(className)
+
+		# Generate quadruple to indicate begin of class
+		self.generatesQuadruple("BEGIN_CLASS", None, None, className)
 
 	def enterClass_public(self, ctx):
 		try:
@@ -289,6 +293,7 @@ class ruleManager(one_for_allListener):
 				tempParam = objVariable(self.addressManager.getVirtualAddress(paramType,self.currentScope[0]), paramName, paramType, 1, 0)
 				self.addressManager.updateVirtualAddress(paramType,self.currentScope[0])
 				routineParameters.append(tempParam)
+				'''CHECK PARAMETERS NOT WORKING WITH ARRAYS'''
 				countParameters += 1
 		except:
 			pass
@@ -299,6 +304,7 @@ class ruleManager(one_for_allListener):
 		except:
 			print("Error while creating new routine")
 			sys.exit()
+
 
 	def exitRoutines(self, ctx):
 		# Change context to global
@@ -315,11 +321,14 @@ class ruleManager(one_for_allListener):
 		self.isPublic = False
 		self.currentClass = None
 
+		# Generate quadruple to indicate end of class
+		className = ctx.TOK_ID().getText()
+		self.generatesQuadruple("END_CLASS", None, None, className)
+
 	def exitClasses(self, ctx):
 		# Reset part of class boolean
 		self.isPartOfClass = False
 		self.currentScope = ("global",None)
-		self.generatesQuadruple("ENDCLASS", None, None, None)
 
 	def exitRestOfProgram(self, ctx):
 		self.generatesQuadruple('END',None, None, None)
@@ -585,12 +594,11 @@ class ruleManager(one_for_allListener):
 			formattedFunction = [retrievedFunction.name, retrievedFunction.data_type]
 
 			self.funcStack.append(formattedFunction)
-
-		elif operator == "GOSUB" or operator == "RETURN_ASSIGN" or operator == "WRITE":
+		elif operator in ["GOSUB", "RETURN_ASSIGN", "WRITE", "BEGIN_MAIN", "BEGIN_CLASS", "END_CLASS"]:
 			resultQuadruple = quadruples(self.counter, operator, None, None,result)
 			self.counter += 1
 			self.quadruplesList.append(resultQuadruple)
-		elif operator == "ENDCLASS"  or operator == "END_WRITE":
+		elif operator in ["END_WRITE"]:
 			resultCuadruple = quadruples(self.counter, operator, None, None,None)
 			self.counter += 1
 			self.quadruplesList.append(resultCuadruple)
@@ -764,10 +772,10 @@ class ruleManager(one_for_allListener):
 			pass
 
 	# CODE ACTIONS FOR MODULE CALL
-	def enterEvaluate_function(self, ctx):
+	def exitEvaluate_function_aux(self, ctx):
 		name = ctx.TOK_ID().getText()
-		#print(name)
 		number = ctx.expressions()
+
 		#Check if the function exists in the function directory
 		if self.funcDirectory.checkFunction(name):
 			#Check that parameters match
@@ -794,16 +802,19 @@ class ruleManager(one_for_allListener):
 
 	def enterNeuro_params(self, ctx):
 		#Send every parameter
-		while self.parameterStack:
-			param = self.parameterStack.pop()
-			arg = self.opdStack.pop()
-			new_memory = param.id
-			self.verifyParams(arg,param)
+		try:
+			while self.parameterStack:
+				param = self.parameterStack.pop()
+				arg = self.opdStack.pop()
+				new_memory = param.id
+				self.verifyParams(arg,param)
 
-			# Param is the action to send the parameters of a function during
-			# a module call. The second element is the address of the current value,
-			# The last element is where the current value is going to be stored.
-			self.generatesQuadruple("PARAM", arg, None, new_memory)
+				# Param is the action to send the parameters of a function during
+				# a module call. The second element is the address of the current value,
+				# The last element is where the current value is going to be stored.
+				self.generatesQuadruple("PARAM", arg, None, new_memory)
+		except:
+			pass
 
 	def exitNeuro_params(self, ctx):
 		#Depending on the return data type, we'll assign a temporal address
@@ -908,7 +919,7 @@ class ruleManager(one_for_allListener):
 	#----------------------------------------------
 	#	INPUT
 	#----------------------------------------------
-	def exitInput_(self, ctx):
+	def enterInput_(self, ctx):
 		val = ctx.expressions().getText()
 		input_val = (val, "string")
 		name = ctx.TOK_ID().getText()
@@ -997,7 +1008,7 @@ class ruleManager(one_for_allListener):
 			# If this is part of a class, then create an classMethod object
 			newMethod = classMethod(self.counter, name, data_type, currentPrivacy, params)
 			method = {self.counter : newMethod}
-			print(self.currentClass.name)
+	
 			#Add new function to the method directory of the class
 			self.currentClass.methodsClassDirectory.update(method)
 			#For return purposes
@@ -1018,6 +1029,7 @@ class ruleManager(one_for_allListener):
 			self.funcDirectory.addFunction(newFunction)
 			#For return purposes
 			self.funcStack.append([name, data_type])
+
 		# Add 1 to counter
 		self.IDCounter += 1
 	

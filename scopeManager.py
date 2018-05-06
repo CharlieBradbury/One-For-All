@@ -11,13 +11,13 @@ from classDirectory import classDirectory
 
 # Element of the memory, which is the parent and the directories
 class scopeManager():
-	def __init__(self, scopeName):
+	def __init__(self, scopeName, globalMemory=variableDirectory()):
 		
 		# Priority of the memory
 		self.scopeName = scopeName
 
 		# Global memory
-		self.globalMemory = variableDirectory()
+		self.globalMemory = globalMemory
 		self.functionDirectory = functionDirectory()
 		self.classDirectory = classDirectory()
 

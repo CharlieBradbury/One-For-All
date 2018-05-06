@@ -5,39 +5,55 @@ import copy
 
 class virtualMachine():
 	def __init__(self, nameOfFile):
-		# Total of quadruples
-		self.totalQuad = None
-		# Counter of the current quads to execute and actual quad to execute
-		self.counterQuad = 1
+
+		#------------------------------------------------------
+		# 	QUADRUPLES
+		#------------------------------------------------------
+		# List of quadruples and current quad to execute
+		self.quadruples = []
 		self.exeQuadruple = None
 
-		# Current memory (changes depending on the context), receives and object of type scopeManager
-		self.currentScope = currentScope = scopeManager("local")
+		# Counter of quads and total quads
+		self.counterQuad = 1
+		self.counterTotalQuads = None
 
+		#------------------------------------------------------
+		# 	SCOPES
+		#------------------------------------------------------
+		# Current memory (changes depending on the context) an address manager
+		self.currentScope = scopeManager("global")
 		self.adManager = addressManager()
-
-		# For managing jumps caused by goto, gotof, gosub and return
-		self.jumpStack = []
-		# For managing parameters to be returned in routines
-		self.returnStack = []
-
-		self.jumpReturnStack = []
-
+		
 		# For managing multipe contexts
 		self.contextStack = []
 
+		#------------------------------------------------------
+		# 	JUMPS AND RETURNS
+		#------------------------------------------------------
+		# For managing jumps caused by goto, gotof, gosub and return
+		self.jumpReturnStack = []
+		# For managing parameters to be returned in routines
+		self.returnStack = []
+		
+		#------------------------------------------------------
+		# 	ARRAYS
+		#------------------------------------------------------
 		# Array stack
 		self.offSetStack = []
 
-		# Print list
-		self.printList = []
+		#------------------------------------------------------
+		# 	CLASSES
+		#------------------------------------------------------
+		# List of classes, which saves scopes for classes
+		self.registeredClasses = dict()
 
-		# List of quadruples
-		self.quadruples = []
-
+		#------------------------------------------------------
+		# 	NAME OF FILE TO READ
+		#------------------------------------------------------
 		# Name of file to read
 		self.nameOfFile = nameOfFile
 	
+	# Method that runs .obj file
 	def run(self):
 		lines = [line.rstrip('\n') for line in open(self.nameOfFile)]
 
@@ -46,10 +62,15 @@ class virtualMachine():
 			newQuad = quadruples(listQuad[0], listQuad[1], listQuad[2], listQuad[3], listQuad[4])
 			self.quadruples.append(newQuad)
 
-		self.printQuadruples()
+		# Prints quads and executes instructions
+		#self.printQuadruples()
 		self.executeInstructions()
 
+		# Print list of classes for validation
+		#for nameOfClass, classContext in self.registeredClasses.items():
+		#	print ("ESTO ES UNA CLASE REGISTRADA", nameOfClass)
 
+	# Prints quadruples
 	def printQuadruples(self):
 		counter = 1;
 		for quad in self.quadruples:
@@ -74,7 +95,6 @@ class virtualMachine():
 			parsedValue = bool(variableUnparsedValue)
 		elif variableType == "string" :
 			parsedValue = variableUnparsedValue
-
 		return parsedValue
 
 	# Parse a constant (in string form from quadruple) into an actual value
@@ -151,6 +171,7 @@ class virtualMachine():
 				# Search for that id in temporalMemory
 				foundVariable = self.currentScope.searchTemporalAddress(address)
 
+
 			valueToReturn = None
 
 			if foundVariable is not None:
@@ -180,6 +201,7 @@ class virtualMachine():
 			context = self.currentScope.adManager.getMemorySegment(address)[0]
 	
 			if context == "global":
+				print("ESTE PEDO ES GLOBAL", result, address, context)
 				if self.currentScope.isArrayGlobal(address):
 					# Retrieve array number
 					offSet = self.offSetStack.pop()
@@ -198,11 +220,11 @@ class virtualMachine():
 
 	def executeInstructions(self):
 
-		self.totalQuad = len(self.quadruples)
+		self.counterTotalQuads = len(self.quadruples)
 
 		lastAddress = None
 
-		while self.counterQuad <= self.totalQuad:
+		while self.counterQuad <= self.counterTotalQuads:
 
 			# Obtain quadruple to execute and the operator
 			exeQuadruple = self.quadruples[self.counterQuad - 1]
@@ -211,12 +233,18 @@ class virtualMachine():
 			operator = exeQuadruple.opt
 			resultAddress = exeQuadruple.result
 
-			# ASSIGNMENT OPERATOR
+			print(self.counterQuad, operator, leftOpd, rightOpd, resultAddress)
+
+			#------------------------------------------------------
+			# 	ASSIGNMENT
+			#------------------------------------------------------
 			if operator == '=':
 				# Retrieve only left value of quadruple, and save it in result
 				leftValue = self.getValueAt(leftOpd, resultAddress, operator)
 				self.saveResultAt(leftValue, resultAddress)
-			# ARITHMETIC OPERATORS
+			#------------------------------------------------------
+			# 	ARITHMETHIC OPERATORS
+			#------------------------------------------------------
 			elif operator == '+':
 				# Retrive values of both operands, and save result and resultAddress
 				leftValue = self.getValueAt(leftOpd, resultAddress, operator)
@@ -237,7 +265,9 @@ class virtualMachine():
 				leftValue = self.getValueAt(leftOpd, resultAddress, operator)
 				rightValue = self.getValueAt(rightOpd, resultAddress, operator)
 				self.saveResultAt(leftValue / rightValue, resultAddress)
-			# RELATIONAL OPERATORS
+			#------------------------------------------------------
+			# 	RELATIONAL OPERATORS
+			#------------------------------------------------------
 			elif operator == '>':
 				# Retrive values of both operands, and save result and resultAddress
 				leftValue = self.getValueAt(leftOpd, resultAddress, operator)
@@ -268,7 +298,9 @@ class virtualMachine():
 				leftValue = self.getValueAt(leftOpd, resultAddress, operator)
 				rightValue = self.getValueAt(rightOpd, resultAddress, operator)
 				self.saveResultAt(leftValue != rightValue, resultAddress)
-			# LOGICAL OPERATORS	
+			#------------------------------------------------------
+			# 	LOGICAL OPERATORS
+			#------------------------------------------------------
 			elif operator == '&&':
 				# Retrive values of both operands, and save result and resultAddress
 				leftValue = self.getValueAt(leftOpd, resultAddress, operator)
@@ -279,29 +311,31 @@ class virtualMachine():
 				leftValue = self.getValueAt(leftOpd, resultAddress, operator)
 				rightValue = self.getValueAt(rightOpd, resultAddress, operator)
 				self.saveResultAt(leftValue or rightValue, resultAddress)
-			# CONDITIONAL OPERATORS
+			#------------------------------------------------------
+			# 	CONDTIONAL OPERATORS
+			#------------------------------------------------------
 			elif operator == 'Goto':
 				# Change the current counterQuad to the resultAddress - 1, which in this case is
 				# just a number of quadruple. (E.g. 64). Compensate because of increment at the end.
 				self.counterQuad = int(resultAddress) - 1
 			elif operator == 'GotoF':	
-
 				leftValue = self.getValueAt(leftOpd)
-				
 				# Change the current counterQuad to the resultAddress only is is false
 				if leftValue is False:
 					self.counterQuad = int(resultAddress) - 1
 			elif operator == 'END':
 				pass
-			# MODULE OPERATORS
+			#------------------------------------------------------
+			# 	MODULE OPERATORS
+			#------------------------------------------------------
 			elif operator == 'ERA':
 				# Save current context
 				self.contextStack.append(self.currentScope)
 
 				# Create new context
-				self.currentScope = scopeManager("local")
+				nameOfFunction = str(resultAddress)
+				self.currentScope = scopeManager(nameOfFunction, self.currentScope.globalMemory)
 			elif operator == 'PARAM':
-
 				# The adress here is the adress in which we need to save the leftValue
 				# However, first we need to search the leftoperand in the previous context
 				contextToComeback = copy.copy(self.currentScope)
@@ -324,17 +358,16 @@ class virtualMachine():
 				self.jumpReturnStack.append(self.counterQuad);
 				# Change quad to the jump
 				self.counterQuad = int(resultAddress) - 1
-
 			elif operator == 'RETURN':
 				# First, we need to obtain where to save
 				whereToSaveResult = self.returnStack.pop()	
 
 				# We obtain the value of the current function
 				resultOfFunction = self.getValueAt(resultAddress, whereToSaveResult)
-
-
 				# Then we change context
 				previousScope = self.contextStack.pop()
+				previousScope.globalMemory = self.currentScope.globalMemory
+
 				self.currentScope = previousScope
 
 				# After changing context, we assign the result
@@ -343,12 +376,23 @@ class virtualMachine():
 				# Then, we can move the pointer back to where we were
 				previousPointer = self.jumpReturnStack.pop()
 				self.counterQuad = previousPointer
+			elif operator == "MAIN":
+				mainContext = scopeManager("main", self.currentScope.globalMemory)
+				self.contextStack.append(mainContext)
+
+			#------------------------------------------------------
+			# 	ARRAY OPERATORS
+			#------------------------------------------------------
 			elif operator == 'ARRAY_POS':
 				offSetValue = self.getValueAt(resultAddress, None, operator)
 				self.offSetStack.append(offSetValue)
+			# ARRAY OPERATORS
 			elif operator == 'ARRAY_DECLARE':
 				# Create array
 				self.saveResultAt(None, resultAddress, int(leftOpd))
+			#------------------------------------------------------
+			# 	READ/WRITE OPERATORS
+			#------------------------------------------------------	
 			elif operator == 'WRITE':
 				result = self.getValueAt(resultAddress)
 				print(result)
@@ -357,7 +401,35 @@ class virtualMachine():
 			elif operator == 'READ':
 				leftValue = self.getValueAt(leftOpd)
 				self.saveResultAt(leftValue, resultAddress)
+			#------------------------------------------------------
+			# 	CLASS OPERATORS
+			#------------------------------------------------------
+			elif operator == "BEGIN_CLASS":
+				# Create new context for this class and save it in dictionary
+				nameOfClass = str(resultAddress)
+				newClassContext = scopeManager(nameOfClass, self.currentScope.globalMemory)
+				self.registeredClasses[nameOfClass] = newClassContext
 
+				# Insert current class in current class context
+				self.contextStack.append(newClassContext)
+
+				print("METIENDO A STACK", nameOfClass)
+
+			elif operator == "END_CLASS":
+				# Pop class from contextStack
+				updatedContext = self.contextStack.pop()
+				updatedContext.globalMemory = self.currentScope.globalMemory
+				
+				nameOfClass = updatedContext.scopeName
+				# Update on registeredClasses
+				self.registeredClasses[nameOfClass] = updatedContext
+
+				print("SACANDO DE STACK", nameOfClass)
+
+			
+			#------------------------------------------------------
+			# 	INCREASE POINTER TO NEXT QUADRUPLES
+			#------------------------------------------------------
 			# Increase counter by 1
 			self.counterQuad += 1
 

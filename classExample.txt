@@ -1,5 +1,10 @@
 program classExample;
 
+var bool j;
+var int barbara;
+var int drink[3];
+var string drama;
+
 class salute {
 	public var string hello, yellow, lala;
 	public var int yoyo, hallo; 
@@ -22,11 +27,6 @@ class hola : salute {
     }
 }
 
-var bool j;
-var int barbara;
-var int drink[3];
-var string drama;
-
 main {
 	var string python = "hello";
 	var int hello = 2, hi = 4, bye = 5;
@@ -45,4 +45,5 @@ main {
 		barbara = 3 * 4;
 	}
 	drama = "hola";
+	return 0;
 }
