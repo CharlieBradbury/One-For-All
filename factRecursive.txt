@@ -21,6 +21,6 @@ function int factorial(var int N, var int prueba)
 main {
 	var int resultado = 0;
 
-	resultado = factorial(10, 100);
+	resultado = factorial(30, 100);
 	write(resultado);
 }	

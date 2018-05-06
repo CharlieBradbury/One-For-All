@@ -1,5 +1,6 @@
 '''
 import sys
+import os
 from antlr4 import *
 from collections import OrderedDict
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -9,11 +10,14 @@ from parser.one_for_allListener import one_for_allListener
 
 from objFunction import objFunction
 from objVariable import objVariable
-from objClass import *
+from classVariable import classVariable
+from objectO import objectO
+from classMethod import *
+from objClass import objClass
 from variableDirectory import variableDirectory
 from functionDirectory import functionDirectory
 from classDirectory import classDirectory
-
+from objectDirectory import objectDirectory
 
 from quadruples import quadruples
 from semanticCube import semanticCube
@@ -164,14 +168,6 @@ class ruleManager(one_for_allListener):
 		self.currentScope = ("local",className)
 		self.createEmptyClass(className)
 
-	def enterInheritance(self, ctx):
-		try:
-			# Assign parent to the current class
-			className = ctx.TOK_ID().getText()
-			self.currentClass.parent = className
-		except:
-			pass
-
 	def enterClass_public(self, ctx):
 		try:
 			# Setting values of public and class booleans
@@ -192,7 +188,7 @@ class ruleManager(one_for_allListener):
 
 	def exitVariable_definition(self, ctx):
 		try:
-			size = 1;
+			size = 1
 			# Obtain type and names of the single or multiple variables associated to that type
 			# E.g: public var int a1, a2;
 			currentType = ctx.data_type().getText()
@@ -224,7 +220,6 @@ class ruleManager(one_for_allListener):
 					for var in currentVariables:
 						newVariable = self.createAddVariable(var.getText(), currentType, dim, size)
 			except:
-				print("SE ESTA MAMANDO")
 				self.error.definition(self.error.VARIABLE_CREATION, '', '')
 
 		except:
@@ -294,7 +289,6 @@ class ruleManager(one_for_allListener):
 				tempParam = objVariable(self.addressManager.getVirtualAddress(paramType,self.currentScope[0]), paramName, paramType, 1, 0)
 				self.addressManager.updateVirtualAddress(paramType,self.currentScope[0])
 				routineParameters.append(tempParam)
-				'''CHECK PARAMETERS NOT WORKING WITH ARRAYS'''
 				countParameters += 1
 		except:
 			pass
@@ -340,8 +334,8 @@ class ruleManager(one_for_allListener):
 			func.localVars.printDirectory()
 		'''
 
-		#self.printClassDictionary()
-		#self.objects.printDirectory()
+		self.printClassDictionary()
+		self.objects.printDirectory()
 
 		# Create text file with quadruples
 		file = open(self.nameOfFile, "w")
@@ -562,13 +556,20 @@ class ruleManager(one_for_allListener):
 			left_code = self.cube.typeToCode(left_type)
 			right_code = self.cube.typeToCode(right_type)
 			resultType = self.cube.semanticValidation(operator_code, left_code, right_code)
-
 			if resultType != -1:
 				resultQuadruple = quadruples(self.counter,operator, left[0], None, '&'+str(right.id))
 				self.counter += 1
 				self.quadruplesList.append(resultQuadruple)
 			else:
-				print(operator, left_type, right_type)
+				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
+		elif operator == 'READ':
+			left_type = left[1]
+			right_type = right.data_type
+			if left_type == "string" and right_type == "string":
+				resultCuadruple = quadruples(self.counter,operator, left[0], None, '&'+str(right.id))
+				self.counter += 1
+				self.quadruplesList.append(resultCuadruple)
+			else:
 				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
 		elif operator == "PARAM":
 			resultQuadruple = quadruples(self.counter, operator,left[0], None,'&'+ str(result))
@@ -883,7 +884,14 @@ class ruleManager(one_for_allListener):
 		#They are already ordered correctly
 		obj_attr = self.initEvalStack.pop(0)
 		#self.generateClassQuadruples("INIT_ATTR",)
-
+	
+	#---------------------------------------------
+	#	INHERITANCE
+	#---------------------------------------------
+	def enterInheritance(self, ctx):
+		if ctx.TOK_ID() is not None:
+			className = ctx.TOK_ID().getText()
+			self.currentClass.parent = className
 
 	#----------------------------------------------
 	#	OUTPUT
@@ -989,7 +997,12 @@ class ruleManager(one_for_allListener):
 			# If this is part of a class, then create an classMethod object
 			newMethod = classMethod(self.counter, name, data_type, currentPrivacy, params)
 			method = {self.counter : newMethod}
+			print(self.currentClass.name)
+			#Add new function to the method directory of the class
 			self.currentClass.methodsClassDirectory.update(method)
+			#For return purposes
+			self.funcStack.append([name, data_type])
+
 
 		else:
 			# Else, this variable is not associated with a class and we need to create a objFunction object

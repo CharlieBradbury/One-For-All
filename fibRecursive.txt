@@ -29,7 +29,7 @@ function int fibo(var int fiboLimite, var int prueba){
 
 main {
 	var int resultado = 0;
-	var int fiboLimite = 20;
+	var int fiboLimite = 23;
 
 	resultado = fibo(fiboLimite, 100);
 	write(resultado);

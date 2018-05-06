@@ -1,0 +1,48 @@
+program classExample;
+
+class salute {
+	public var string hello, yellow, lala;
+	public var int yoyo, hallo; 
+	public function string sayHello(var string hola, var string addios, var int fellow) {
+			write("hello");
+		}
+    init(){
+
+    }
+}
+
+class hola : salute {
+	public var string hello, yellow, lala;
+	public var int yoyo, hallo; 
+	public function string sayHello(var string hola, var string addios, var int fellow) {
+			write("hello");
+		}
+    init(){
+
+    }
+}
+
+var bool j;
+var int barbara;
+var int drink[3];
+var string drama;
+
+main {
+	var string python = "hello";
+	var int hello = 2, hi = 4, bye = 5;
+	
+
+	var int dyr[2]; 
+	j = (1 * (2 + 4) * 6 + 10) > 50;
+	if(3*2>2) {
+		write("hi", 3*4);
+	}
+	j = (1 * (2 + 4) * 6 + 10) > 50;
+	if(3 > 2) {
+		barbara = 3 + 2;
+		write("helo");
+	} else {
+		barbara = 3 * 4;
+	}
+	drama = "hola";
+}

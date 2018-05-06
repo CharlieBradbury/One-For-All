@@ -1,10 +1,8 @@
 program fibIterative;
 
-
-
 main {
 	var int resultado = 0;
-	var int fiboLimite = 20;
+	var int fiboLimite = 23;
 	var int counter = 2;
 	var int fiboAnt = 0;
 	var int fiboAntAnt = 0;

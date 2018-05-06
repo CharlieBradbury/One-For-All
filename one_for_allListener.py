@@ -62,6 +62,15 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by one_for_allParser#neuro_inheritance.
+    def enterNeuro_inheritance(self, ctx:one_for_allParser.Neuro_inheritanceContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_inheritance.
+    def exitNeuro_inheritance(self, ctx:one_for_allParser.Neuro_inheritanceContext):
+        pass
+
+
     # Enter a parse tree produced by one_for_allParser#class_public.
     def enterClass_public(self, ctx:one_for_allParser.Class_publicContext):
         pass

@@ -1,6 +1,4 @@
 #Regular variable
-from arrayManager import arrayManager
-
 class objVariable():
 	def __init__(self, id, name, data_type, dim=0, size=1, value=None):
 		self.id = id
