@@ -1,8 +1,7 @@
 program fibRecursive;
 
-function int fibo(var int fiboLimite, var int prueba){
-	var int fiboLimiteAnt;
-	var int fiboLimiteAntAnt;
+function int fibo(var int fiboLimite){
+
 	var int fiboAnt;
 	var int	fiboAntAnt;
 
@@ -16,13 +15,7 @@ function int fibo(var int fiboLimite, var int prueba){
 			return 1;
 		} else
 		{
-			fiboLimiteAnt = fiboLimite - 1;
-			fiboLimiteAntAnt = fiboLimite - 2;
-
-			fiboAnt = fibo(fiboLimiteAnt, prueba);
-			fiboAntAnt = fibo(fiboLimiteAntAnt, prueba);
-
-			return fiboAnt + fiboAntAnt;
+			return (fibo(fiboLimite - 1)) + (fibo(fiboLimite - 2));
 		}
 	}
 }
@@ -31,6 +24,6 @@ main {
 	var int resultado = 0;
 	var int fiboLimite = 20;
 
-	resultado = fibo(fiboLimite, 100);
+	resultado = fibo(fiboLimite);
 	write(resultado);
 }	

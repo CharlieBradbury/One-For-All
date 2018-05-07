@@ -1,7 +1,7 @@
 program factIterative;
 
 main {
-	var int N = 10;
+	var int N = 30;
 	var int resultado = 1;
 	var int i = 1;
 

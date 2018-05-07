@@ -1,0 +1,65 @@
+program classExample;
+
+var bool j;
+var int barbara;
+var int drink[3];
+var string drama; 
+
+class prueba {
+	public var int nombre;
+	public var string p;
+
+	public function int regresa(var int uno)
+	{
+		return 555;
+	}
+	
+    init(var int nombre, var string p){
+
+    }
+}
+
+class salute {
+	public var string pluma, lapiz, labial;
+	public var int nombre, stereo; 
+	public function string sayHello(var string hola, var string addios, var int fellow) {
+			return "sayHello";
+		}
+    init(var int cant1, var int cant2){
+
+    }
+}
+
+class hola : salute {
+	public var string hello, yellow, lala;
+	public var int yoyo, hallo; 
+	public function string sayBye(var string hola, var string addios, var int fellow) {
+		return "sayBye";
+	}
+
+    init(var int cant1, var int cant2){
+
+    }
+}
+
+main {
+	var string python = "hello";
+	var int dos = 999;
+	var int hello = 33, hi = 4, bye = 5;
+	var int dyr[2]; 
+	j = (1 * (2 + 4) * 6 + 10) > 50;
+	if(3*2>2) {
+		write("hi", 3*4);
+	}
+	j = (1 * (2 + 4) * 6 + 10) > 50;
+	if(3 > 2) {
+		barbara = 3 + 2;
+		write("helo");
+	} else {
+		barbara = 3 * 4;
+	}
+	var prueba obj;
+	obj = init prueba(10,"hola");
+	dos = obj.regresa(obj.uno);
+	write(dos);
+}

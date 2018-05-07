@@ -5,7 +5,7 @@ import sys
 # Directory of classes
 class classDirectory:
     def __init__(self):
-        self.directory = dict()
+        self.directory = {}
         self.error = errorHandler()
     
     # Returns a boolean indicating if a class with such ID exists in the dictionary
@@ -53,3 +53,7 @@ class classDirectory:
             del self.directory[class_id]
         except:
             self.error.definition(self.error.CLASS_NOT_DELETED, class_id, None)
+
+    def printDirectory(self):
+        for key,obj in self.directory.items():
+            obj.printClass()

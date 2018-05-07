@@ -7,6 +7,11 @@ class salute {
 	public function string sayHello(var string hola, var string addios, var int fellow) {
 			write("hello");
 		}
+
+	init()
+	{
+		
+	}
 }
 
 var bool j;

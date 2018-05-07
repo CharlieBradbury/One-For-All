@@ -16,14 +16,3 @@ class classMethod():
 	def printMethod(self):
 		print("METHOD", self.id, self.privacy, self.data_type, self.name)
 		self.localVars.printDirectory()
-		'''try:
-			stringParameters = ""
-			for _par in self.params:
-				stringParameters += (_par[0] + " " + _par[1] + ", ")
-			print("METHOD", self.id, self.privacy, self.data_type, self.name)
-			self.localVars.printDirectory()
-		except:
-			print("METHOD", self.id, self.privacy, self.data_type, self.name)
-			self.localVars.printDirectory()
-			print("Error while printing information of method")
-		'''

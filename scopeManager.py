@@ -11,13 +11,13 @@ from classDirectory import classDirectory
 
 # Element of the memory, which is the parent and the directories
 class scopeManager():
-	def __init__(self, scopeName):
+	def __init__(self, scopeName, globalMemory=variableDirectory()):
 		
 		# Priority of the memory
 		self.scopeName = scopeName
 
 		# Global memory
-		self.globalMemory = variableDirectory()
+		self.globalMemory = globalMemory
 		self.functionDirectory = functionDirectory()
 		self.classDirectory = classDirectory()
 
@@ -38,7 +38,7 @@ class scopeManager():
 			return None
 		
 	# Saves the result of a temporal variable in an adress
-	def saveResultTemporal(self, resultValue, address):
+	def saveResultTemporal(self, resultValue, address, name_type):
 		typeString = str(type(resultValue))
 		tempVariable = objVariable(address, "tempVariable", typeString, 0, 1, resultValue)
 		self.temporalMemory.addVariable(tempVariable)
@@ -51,7 +51,7 @@ class scopeManager():
 			return None
 		
 	# Saves the result of a temporal variable in an adress
-	def saveResultLocal(self, resultValue, address, offSet=-1):
+	def saveResultLocal(self, resultValue, address, name_type, offSet=-1):
 		typeString = str(type(resultValue))
 		varFound = self.searchLocalAddress(address)
 
@@ -80,7 +80,7 @@ class scopeManager():
 			return None
 		
 	# Saves the result of a temporal variable in an adress
-	def saveResultGlobal(self, resultValue, address, offSet=-1):
+	def saveResultGlobal(self, resultValue, address, name_type, offSet=-1):
 		typeString = str(type(resultValue))
 		varFound = self.searchGlobalAddress(address)
 

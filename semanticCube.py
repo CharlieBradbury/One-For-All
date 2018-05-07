@@ -30,7 +30,7 @@ class semanticCube():
 		self.dicOperators['!='] = 10
 		self.dicOperators['&&'] = 11
 		self.dicOperators['||'] = 12
-		self.dicOperators['GotoF'] = 13
+
 
 		# Initialize cube
 		self.cube = self.createCube(-1, *(5, 5, 13))

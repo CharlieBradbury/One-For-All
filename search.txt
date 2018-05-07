@@ -4,7 +4,7 @@ var int arraySearch[10];
 
 main {
 	var int cant = 10;
-	var int searchValue = 5;
+	var int searchValue = 999;
 	var int i = 0;
 
 	arraySearch[0] = 28;

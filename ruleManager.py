@@ -1,5 +1,6 @@
 '''
 import sys
+import os
 from antlr4 import *
 from collections import OrderedDict
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -9,11 +10,14 @@ from parser.one_for_allListener import one_for_allListener
 
 from objFunction import objFunction
 from objVariable import objVariable
-from objClass import *
+from classVariable import classVariable
+from objectO import objectO
+from classMethod import *
+from objClass import objClass
 from variableDirectory import variableDirectory
 from functionDirectory import functionDirectory
 from classDirectory import classDirectory
-
+from objectDirectory import objectDirectory
 
 from quadruples import quadruples
 from semanticCube import semanticCube
@@ -123,8 +127,10 @@ class ruleManager(one_for_allListener):
 		self.FunctionId = None
 
 		#Stack for storing parameters for the initialization of objects
+		self.currentObj = None
 		self.initStack = []
 		self.initEvalStack = []
+		self.inheritance = None
 	
 		#Global variable to identify objects
 		self.isObject = False
@@ -140,6 +146,7 @@ class ruleManager(one_for_allListener):
 		#	CREATE FIRST QUADRUPLE
 		#   Goto to the main method
 		#-----------------------------------------------------
+		self.generatesQuadruple("BEGIN_MAIN", None, None, None)
 		self.generatesQuadruple('Goto', None, None, None)
 		self.jumpStack.append(('Main', self.counter - 1))
 
@@ -164,13 +171,12 @@ class ruleManager(one_for_allListener):
 		self.currentScope = ("local",className)
 		self.createEmptyClass(className)
 
-	def enterInheritance(self, ctx):
-		try:
-			# Assign parent to the current class
-			className = ctx.TOK_ID().getText()
-			self.currentClass.parent = className
-		except:
-			pass
+		# Generate quadruple to indicate begin of class
+		self.generateClassQuadruples("BEGIN_CLASS", None, None, className)
+
+	def exitClass_definition(self,ctx):
+		self.inheritance = False
+		self.currentClass.printClass()
 
 	def enterClass_public(self, ctx):
 		try:
@@ -192,7 +198,7 @@ class ruleManager(one_for_allListener):
 
 	def exitVariable_definition(self, ctx):
 		try:
-			size = 1;
+			size = 1
 			# Obtain type and names of the single or multiple variables associated to that type
 			# E.g: public var int a1, a2;
 			currentType = ctx.data_type().getText()
@@ -220,11 +226,11 @@ class ruleManager(one_for_allListener):
 					for var in currentVariables:
 						#Create variable object
 						newVariable = self.createAddVariable(var.getText(), currentType, dim, size)
+
 				else:
 					for var in currentVariables:
 						newVariable = self.createAddVariable(var.getText(), currentType, dim, size)
 			except:
-				print("SE ESTA MAMANDO")
 				self.error.definition(self.error.VARIABLE_CREATION, '', '')
 
 		except:
@@ -306,12 +312,10 @@ class ruleManager(one_for_allListener):
 			print("Error while creating new routine")
 			sys.exit()
 
+
 	def exitRoutines(self, ctx):
 		# Change context to global
 		self.currentScope = ("global",None)
-
-	def enterNeuro_array(self, ctx):
-		pass
 
 	def exitClass_definition(self, ctx):
 		# Call method to add finished class to the class directory
@@ -321,11 +325,14 @@ class ruleManager(one_for_allListener):
 		self.isPublic = False
 		self.currentClass = None
 
+		# Generate quadruple to indicate end of class
+		className = ctx.TOK_ID().getText()
+		self.generateClassQuadruples("END_CLASS", None, None, className)
+
 	def exitClasses(self, ctx):
 		# Reset part of class boolean
 		self.isPartOfClass = False
 		self.currentScope = ("global",None)
-		self.generatesQuadruple("ENDCLASS", None, None, None)
 
 	def exitRestOfProgram(self, ctx):
 		self.generatesQuadruple('END',None, None, None)
@@ -340,8 +347,8 @@ class ruleManager(one_for_allListener):
 			func.localVars.printDirectory()
 		'''
 
-		#self.printClassDictionary()
-		#self.objects.printDirectory()
+		self.printClassDictionary()
+		self.objects.printDirectory()
 
 		# Create text file with quadruples
 		file = open(self.nameOfFile, "w")
@@ -476,22 +483,22 @@ class ruleManager(one_for_allListener):
 			print("Error when reading ), ( was no on optStack")
 			sys.exit()
 
-	def enterNeuro_expression(self, ctx):
+	def exitNeuro_expression(self, ctx):
 		if self.validateStacks():
 			if self.checkOperatorsOnStack(["&&", "||"]):
 				self.generateQuadruple()
 
-	def enterNeuro_relational(self, ctx):
+	def exitNeuro_relational(self, ctx):
 		if self.validateStacks():
 			if self.checkOperatorsOnStack(["<", "<=", ">", ">=", "==", "!="]):
 				self.generateQuadruple()
 
-	def enterNeuro_sumMinus(self, ctx):
+	def exitNeuro_sumMinus(self, ctx):
 		if self.validateStacks():
 			if self.checkOperatorsOnStack(["+", "-"]):
 				self.generateQuadruple()
 
-	def enterNeuro_multiDiv(self, ctx):
+	def exitNeuro_multiDiv(self, ctx):
 		if self.validateStacks():
 			if self.checkOperatorsOnStack(["*", "/"]):
 				self.generateQuadruple()
@@ -562,13 +569,20 @@ class ruleManager(one_for_allListener):
 			left_code = self.cube.typeToCode(left_type)
 			right_code = self.cube.typeToCode(right_type)
 			resultType = self.cube.semanticValidation(operator_code, left_code, right_code)
-
 			if resultType != -1:
 				resultQuadruple = quadruples(self.counter,operator, left[0], None, '&'+str(right.id))
 				self.counter += 1
 				self.quadruplesList.append(resultQuadruple)
 			else:
-				print(operator, left_type, right_type)
+				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
+		elif operator == 'READ':
+			left_type = left[1]
+			right_type = right.data_type
+			if left_type == "string" and right_type == "string":
+				resultCuadruple = quadruples(self.counter,operator, left[0], None, '&'+str(right.id))
+				self.counter += 1
+				self.quadruplesList.append(resultCuadruple)
+			else:
 				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)
 		elif operator == "PARAM":
 			resultQuadruple = quadruples(self.counter, operator,left[0], None,'&'+ str(result))
@@ -584,12 +598,11 @@ class ruleManager(one_for_allListener):
 			formattedFunction = [retrievedFunction.name, retrievedFunction.data_type]
 
 			self.funcStack.append(formattedFunction)
-
-		elif operator == "GOSUB" or operator == "RETURN_ASSIGN" or operator == "WRITE":
+		elif operator in ["GOSUB", "RETURN_ASSIGN", "WRITE", "BEGIN_MAIN"]:
 			resultQuadruple = quadruples(self.counter, operator, None, None,result)
 			self.counter += 1
 			self.quadruplesList.append(resultQuadruple)
-		elif operator == "ENDCLASS"  or operator == "END_WRITE":
+		elif operator in ["END_WRITE"]:
 			resultCuadruple = quadruples(self.counter, operator, None, None,None)
 			self.counter += 1
 			self.quadruplesList.append(resultCuadruple)
@@ -625,10 +638,45 @@ class ruleManager(one_for_allListener):
 	#		QUADRUPLES FOR CLASSES
 	#----------------------------------------------------------------------------------------
 	def generateClassQuadruples(self, operator, left, right, result):
-		if operator == "ERA":
-			resultCuadruple = quadruples(self.counter, operator, None, right,result)
+		if operator == "CLASS_ERA":
+			resultCuadruple = quadruples(self.counter, operator, None, '&'+str(right), result)
 			self.counter += 1
 			self.quadruplesList.append(resultCuadruple)
+
+		elif operator in ["CREATE_OBJ", "END_OBJ"]:		
+			resultCuadruple = quadruples(self.counter, operator, left, right, '&'+str(result))		
+			self.counter += 1		
+			self.quadruplesList.append(resultCuadruple)		
+		elif operator == "ATTR":		
+			left_value = left[0]		
+			left_type = left[1]		
+			result_type = result.data_type		
+			if result_type == left_type:		
+				resultQuadruple = quadruples(self.counter,operator, left_value, None, '&'+str(result.id))		
+				self.counter += 1		
+				self.quadruplesList.append(resultQuadruple)		
+			else:		
+				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)		
+		elif operator == "ACCESS_OBJ":		
+			#Get the type of the address		
+			type = right[0]
+			idOfAttribute = right[1]
+
+			
+			#Create temporal variable of the same data type of the attribute
+
+			# Search for that variable
+
+			temp = self.addressManager.getVirtualAddress(type,'temporal')		
+			self.opdStack.append(('&'+str(temp), type))		
+		
+			resultQuadruple = quadruples(self.counter,operator, '&'+str(left), '&'+str(idOfAttribute), '&'+str(temp))		
+			self.counter += 1		
+			self.quadruplesList.append(resultQuadruple)
+		elif operator in ["BEGIN_CLASS", "END_CLASS"]:
+			resultQuadruple = quadruples(self.counter, operator, None, None, result)
+			self.counter += 1
+			self.quadruplesList.append(resultQuadruple)
 
 	#Method that retrieves an specific quadruple and modifies its value
 	def fillQuadruple(self, id, cont):
@@ -762,11 +810,43 @@ class ruleManager(one_for_allListener):
 		except:
 			pass
 
-	# CODE ACTIONS FOR MODULE CALL
-	def enterEvaluate_function(self, ctx):
-		name = ctx.TOK_ID().getText()
-		#print(name)
+	# AQUIIIII
+	def exitEvaluate_method_aux(self, ctx):
+		nameOfObject = ctx.TOK_ID(0).getText()
+		nameOfMethod = ctx.TOK_ID(1).getText()
+
 		number = ctx.expressions()
+
+		objInfo = self.objects.getObjectByName(nameOfObject)
+		nameClass = objInfo.type
+
+		#Check if the function exists in the function directory of the respective class
+		classObj = self.classDirectory.getClassByName(nameClass)
+
+		for key, val in classObj.methodsClassDirectory.items():
+			if val.name == nameOfMethod:
+				method = val
+				copyParamStack = []
+				for param in method.params:
+					print(method.params)
+					copyParamStack.append(param)
+				self.parameterStack = copyParamStack
+				if len(self.parameterStack) == len(number) or (len(self.parameterStack) == 0 and number == ''):
+					self.FunctionId = method.id
+					self.returnType = method.data_type
+					self.generateClassQuadruples("CLASS_ERA", None, objInfo.id, val.name)
+					# Search for that function in directory and push it to stack
+					formattedFunction = [method.name, method.data_type]
+					self.funcStack.append(formattedFunction)
+				else:
+					print("The number of parameters does not match the function")
+					sys.exit()
+
+	# CODE ACTIONS FOR MODULE CALL
+	def exitEvaluate_function_aux(self, ctx):
+		name = ctx.TOK_ID().getText()
+		number = ctx.expressions()
+
 		#Check if the function exists in the function directory
 		if self.funcDirectory.checkFunction(name):
 			#Check that parameters match
@@ -791,18 +871,25 @@ class ruleManager(one_for_allListener):
 				print("The number of parameters does not match the function")
 				sys.exit()
 
+
+	#-------------------------------------------	
+
+
 	def enterNeuro_params(self, ctx):
 		#Send every parameter
-		while self.parameterStack:
-			param = self.parameterStack.pop()
-			arg = self.opdStack.pop()
-			new_memory = param.id
-			self.verifyParams(arg,param)
+		try:
+			while self.parameterStack:
+				param = self.parameterStack.pop()
+				arg = self.opdStack.pop()
+				new_memory = param.id
+				self.verifyParams(arg,param)
 
-			# Param is the action to send the parameters of a function during
-			# a module call. The second element is the address of the current value,
-			# The last element is where the current value is going to be stored.
-			self.generatesQuadruple("PARAM", arg, None, new_memory)
+				# Param is the action to send the parameters of a function during
+				# a module call. The second element is the address of the current value,
+				# The last element is where the current value is going to be stored.
+				self.generatesQuadruple("PARAM", arg, None, new_memory)
+		except:
+			pass
 
 	def exitNeuro_params(self, ctx):
 		#Depending on the return data type, we'll assign a temporal address
@@ -848,42 +935,82 @@ class ruleManager(one_for_allListener):
 	
 
 	def enterInit_class(self, ctx):
-		#Get name of the variable that its instantiated
-		name = ctx.TOK_ID().getText()
-		#Identify the current scope 
-		if self.currentScope[0] == "local":
-			variables = self.funcDirectory.getAddressFunction(self.currentScope[1])
-			#Look for the variable in the directory
-			variable = variables.getVariableDirectory().getVariableByName(name)
+		#Get the name of the id
+		nameOfObject = ctx.TOK_ID(0).getText()
+		nameOfClass = ctx.TOK_ID(1).getText()
+		
+		#Get the object 
+		self.currentObj = self.objects.getObjectByClassName(nameOfClass)
+		#Get the address of the object
+		address = self.currentObj.id
 
-		if variable is None or self.currentScope[0] == "global" :
-			variable = self.varDirectory.getVariableByName(name)
-
-		elif variable is None:
-			self.error.definition(self.error.VARIABLE_NOT_DEFINED, name, None)
-		#Get address of the object
-		id = variable.id
-		#Check object class
-		object_class = variable.data_type
-		#Create new instance in the object directory
-		self.createAddObject(id, name, object_class)
-		#Create quaruples for ERA CONSTRUCTOR
-		self.generateClassQuadruples("ERA", None, object_class, "init")
-
-		#Create quadruples for sending the parameters
-		#Look for the method in the 
-
-		print(variable)
+		#Create quaruples for creating objects
+		self.generateClassQuadruples("CREATE_OBJ", nameOfClass, nameOfObject, address)
 	
+	def exitInit_class(self, ctx):
+		#Get the address of the object
+		name = self.currentObj.name
+		address = self.currentObj.id
+
+		#Create quaruples for indicating end of class init
+		self.generateClassQuadruples("END_OBJ", name, None, address)
+
 	def enterNeuro_initEval(self, ctx):
 		self.initEvalStack.append(self.opdStack.pop())
 
 	def enterNeuro_createConstructor(self, ctx):
-		#Create quadruples for sending the params
-		#They are already ordered correctly
-		obj_attr = self.initEvalStack.pop(0)
-		#self.generateClassQuadruples("INIT_ATTR",)
+		
+		#Get name of the class
+		className = self.currentObj.type
+		#Get the class
+		directory = self.classDirectory.getClassByName(className)
+		#Search in the methods directory of the class for the constructor
+		for key, method in directory.methodsClassDirectory.items():
+			if method.name == "constructor":
+				#Get list of params
+				params = method.params
+		for param in params:
+			#Create quadruples for sending the params
+			obj_attr = self.initEvalStack.pop(0)
+			self.generateClassQuadruples("ATTR", obj_attr, None, param)
+		
+	
+	#---------------------------------------------
+	#	INHERITANCE
+	#---------------------------------------------
+	def enterInheritance(self, ctx):
+		self.inheritance = True
+		className = ctx.TOK_ID().getText()
+		self.currentClass.parent = className
+		parent_class = self.classDirectory.getClassByName(self.currentClass.parent)
+		copy_attr = parent_class.variableClassDirectory.copy()
+		self.currentClass.variableClassDirectory.update(copy_attr)
 
+	#-------------------------------------------
+	#	EVALUATE CLASS
+	#-------------------------------------------	
+	def enterEvaluate_class(self, ctx):
+		try:
+			#Get the name of the object
+			id = ctx.TOK_ID(0).getText()
+			#Get the attribute or the name of the method
+			id2 = ctx.TOK_ID(1).getText()
+			#Check if it exists in the table of objects
+			if self.objects.checkObjectByName(id):
+				obj = self.objects.getObjectByName(id)
+
+				for key, val in obj.objAttr.items():
+					if id2 == val.name: 
+						#Check attribute type
+						type = val.data_type
+						val = [type, val.id]
+
+						#Generate quadruple
+						self.generateClassQuadruples("ACCESS_OBJ", obj.id, val, None)
+			else:
+				print("The object does not exist")
+		except:
+			print("Error while evaluating class")
 
 	#----------------------------------------------
 	#	OUTPUT
@@ -945,16 +1072,25 @@ class ruleManager(one_for_allListener):
 		if self.isPartOfClass:
 			# Set current privacy of the group of variables
 			currentPrivacy = "public" if self.isPublic else "private"
-
 			# If this is part of a class, then create an classVariable object 
 			newClassVariable = classVariable(self.addressManager.getVirtualAddress(data_type, self.currentScope[0]), name, data_type, currentPrivacy)
+			address = self.addressManager.getVirtualAddress(data_type, self.currentScope[0])
 			#Create a dict entry
 			var = {self.addressManager.getVirtualAddress(data_type, self.currentScope[0]) : newClassVariable}
 			#Update the address 
 			self.addressManager.updateVirtualAddress(data_type, self.currentScope[0])
-			#Save the variable in the current class directory
-			self.currentClass.variableClassDirectory.update(var)
-
+			#Check if there are inherited variables
+			if not self.inheritance:
+				#Save the variable in the current class directory
+				self.currentClass.variableClassDirectory.update(var)
+			else:
+				#Iterate dictionary 
+				for key,value in self.currentClass.variableClassDirectory.items():
+					if key == list(var.keys())[0]:
+						new_key = key + 1
+						var[new_key] = var.pop(key)
+						var[new_key].id = new_key
+				self.currentClass.variableClassDirectory.update(var)
 		else:
 			# Else, this variable is not associated with a class and we need to create a objVariable object
 			# and add it directly to the global variables directory
@@ -970,7 +1106,17 @@ class ruleManager(one_for_allListener):
 					func.countVars += 1
 			elif self.isObject:
 				newVariable = objVariable(self.addressManager.getVirtualAddress("obj", self.currentScope[0]), name, data_type, dimensions, size)
+				newObj = objectO(self.addressManager.getVirtualAddress("obj", self.currentScope[0]), name, data_type )
 				self.addressManager.updateVirtualAddress("obj", self.currentScope[0])
+				#Pass the attributes and methods of the class to the object
+				for key, class_value in self.classDirectory.directory.items():
+					if class_value.name == data_type:
+						#Generates copy of the class attributes into the object attrs
+						newObj.objAttr = class_value.variableClassDirectory.copy()
+						#Generates copy of the class methods into the object methods
+						newObj.objMethods = class_value.methodsClassDirectory.copy() 
+				#Add object to the object directory
+				self.objects.addObject(newObj)
 
 				self.isObject = False
 				if self.currentScope[0] == "global":
@@ -989,12 +1135,13 @@ class ruleManager(one_for_allListener):
 			# If this is part of a class, then create an classMethod object
 			newMethod = classMethod(self.counter, name, data_type, currentPrivacy, params)
 			method = {self.counter : newMethod}
+			#Add new function to the method directory of the class
 			self.currentClass.methodsClassDirectory.update(method)
-
+			#For return purposes
+			self.funcStack.append([name, data_type])
 		else:
 			# Else, this variable is not associated with a class and we need to create a objFunction object
 			# and add it directly to the function directory
-
 			newFunction = objFunction(self.counter, name, data_type, params)
 			#Add parameters to the local variable table
 			if params is not None:
@@ -1013,15 +1160,14 @@ class ruleManager(one_for_allListener):
 		if self.classDirectory.checkClassByName(data_type):
 			#If it exists then create a new object in the object directory
 			newObject = objectO(id, name, data_type)
-			
 			#Pass the attributes and methods of the class to the object
 			for key, class_value in self.classDirectory.directory.items():
-				if class_value.name == name:
+				if class_value.name == data_type:
 					#Generates copy of the class attributes into the object attrs
-					newObject.objAttr.copy(class_value.variableClassDirectory)  
+					newObject.objAttr = class_value.variableClassDirectory.copy()
 					#Generates copy of the class methods into the object methods
-					newObject.objMethods.copy(class_value.methodsClassDirectory) 
-
+					newObject.objMethods = class_value.methodsClassDirectory.copy() 
+					print(newObject.printObject())
 			print("Object created", name)
 			#Add object to the object directory
 			self.objects.addObject(newObject)
@@ -1034,11 +1180,12 @@ class ruleManager(one_for_allListener):
 		#Add parameters to the local variable table
 		if params is not None:
 			param_number = len(params)
+			newMethod.params = params
 			newMethod.countVars = param_number
 			newMethod.localVars.addMultipleVariables(params)
 		method = {self.counter : newMethod}
-		newMethod.localVars.printDirectory()
 		self.currentClass.methodsClassDirectory.update(method)
+		self.currentClass.printClass()
 
 	
 	def verifyParams(self, argument, parameter):
