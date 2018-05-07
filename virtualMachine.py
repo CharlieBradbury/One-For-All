@@ -237,7 +237,7 @@ class virtualMachine():
 			operator = exeQuadruple.opt
 			resultAddress = exeQuadruple.result
 
-			print(self.counterQuad, operator, leftOpd, rightOpd, resultAddress)
+			#print(self.counterQuad, operator, leftOpd, rightOpd, resultAddress)
 
 			#------------------------------------------------------
 			# 	ASSIGNMENT
@@ -381,7 +381,7 @@ class virtualMachine():
 
 
 				self.currentScope = previousScope
-				
+
 
 				# After changing context, we assign the result
 				self.saveResultAt(resultOfFunction, whereToSaveResult)
@@ -403,7 +403,7 @@ class virtualMachine():
 				classContext.globalMemory = self.currentScope.globalMemory
 				self.contextStack.append(self.currentScope)
 				self.currentScope = classContext
-				
+
 				self.callingClass = True
 
 			#------------------------------------------------------

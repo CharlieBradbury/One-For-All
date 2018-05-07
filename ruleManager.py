@@ -336,7 +336,7 @@ class ruleManager(one_for_allListener):
 
 	def exitRestOfProgram(self, ctx):
 		self.generatesQuadruple('END',None, None, None)
-		self.printQuadruples()
+		#self.printQuadruples()
 		'''
 		print("------GLOBAL VARIABLES-----")
 		for key, var in self.varDirectory.directory.items():
