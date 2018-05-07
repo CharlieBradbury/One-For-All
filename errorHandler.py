@@ -11,6 +11,11 @@ class errorHandler():
     INVALID_OPERATION = 5
     TYPE_MISMATCH = 6
 
+    #Classes
+    CLASS_NOT_DEFINED =7
+    DUPLICATED_CLASS = 8
+    CLASS_NOT_DELETED = 9
+
     def __init__(self):
         self.directory = dict()       
     
@@ -27,6 +32,13 @@ class errorHandler():
             print("Error (" + str(error_type) + ") : Invalid operation", arg1, arg2)
         elif error_type == 6:
             print("Error (" + str(error_type) + ") : Type mismatch", arg1, arg2)
+        elif error_type == 7:
+            print("Error (" + str(error_type) + ") : Class not defined", arg1)
+        elif error_type == 8:
+            print("Error (" + str(error_type) + ") : Class already defined", arg1)
+        elif error_type == 9:
+            print("Error (" + str(error_type) + ") : Class not deleted", arg1)
+
         
         #raise Exception(error_type)
         

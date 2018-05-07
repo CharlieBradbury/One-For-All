@@ -33,6 +33,12 @@ class objectDirectory:
         for key, tClass in self.directory.items():
             if tClass.name == object_name:
                 return tClass
+        self.error.definition(self.error.CLASS_NOT_DEFINED, object_name, None)
+
+    def getObjectByClassName(self, class_name):
+        for key, tClass in self.directory.items():
+            if tClass.type == class_name:
+                return tClass
         self.error.definition(self.error.CLASS_NOT_DEFINED, class_name, None)
 
     # Return size of current directory

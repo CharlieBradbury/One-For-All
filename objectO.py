@@ -34,7 +34,7 @@ class objectO():
 
 			print("Variables: ")
 			for key, var in self.objAttr.items():
-				print(var)
+				var.printClassVariable()
 
 			print("Methods: ")
 			for key, method in self.objMethods.items():

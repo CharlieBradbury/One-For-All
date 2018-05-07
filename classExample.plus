@@ -1,12 +1,12 @@
 program classExample;
 
 class salute {
-	public var string hello, yellow, lala;
-	public var int yoyo, hallo; 
+	public var string pluma, lapiz, labial;
+	public var int nombre, stereo; 
 	public function string sayHello(var string hola, var string addios, var int fellow) {
 			write("hello");
 		}
-    init(){
+    init(var int cant1, var int cant2){
 
     }
 }
@@ -17,21 +17,21 @@ class hola : salute {
 	public function string sayHello(var string hola, var string addios, var int fellow) {
 			write("hello");
 		}
-    init(){
+    init(var int cant1, var int cant2){
 
     }
 }
 
+
 var bool j;
 var int barbara;
 var int drink[3];
-var string drama;
+var string drama; 
 
 main {
 	var string python = "hello";
+	var int dos;
 	var int hello = 2, hi = 4, bye = 5;
-	
-
 	var int dyr[2]; 
 	j = (1 * (2 + 4) * 6 + 10) > 50;
 	if(3*2>2) {
@@ -44,6 +44,9 @@ main {
 	} else {
 		barbara = 3 * 4;
 	}
-	drama = "hola";
-	return 0;
+	var hola obj;
+	obj = init hola(2,3);
+	dos = obj.yoyo;
+	write(dos);
+
 }

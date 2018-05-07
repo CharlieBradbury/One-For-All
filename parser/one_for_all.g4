@@ -87,10 +87,10 @@ routine_definition:
     TOK_FUNCTION data_type TOK_ID TOK_LPAREN (parameters)? TOK_RPAREN block;
 
 parameters:
-    TOK_VAR data_type TOK_ID (TOK_LBRACKET expressions neuro_array TOK_RBRACKET)? parameters_recursive;
+    TOK_VAR data_type TOK_ID (parameters_recursive)?;
 
 parameters_recursive:
-    (TOK_COMMA  TOK_VAR neuroparam_rec data_type TOK_ID (TOK_LBRACKET expressions neuro_array TOK_RBRACKET)?)*;
+    (TOK_COMMA TOK_VAR data_type TOK_ID)+;
 
 neuro_array:
 ;
@@ -120,7 +120,7 @@ return_expr:
 	TOK_RETURN expressions TOK_SEMICOLON;
 
 statute:
-    (assignment | condition | loop | output | input_ | variables |return_expr)*;
+    (assignment | condition | loop | output | input_ | variables |return_expr | init_class)*;
 
 assignment:
 	 id_ TOK_EQUAL expressions TOK_SEMICOLON;
@@ -252,14 +252,14 @@ constant:
 	(FLOAT | INT | STRING | BOOLEAN | id_);
 
 id_:
-	(id_definition_)+;
+	id_definition_;
 
 id_definition_:
-	TOK_ID | evaluate_class | evaluate_function | evaluate_array | init_class;
+	evaluate_function | neuro_prueba evaluate_class| evaluate_array | TOK_ID;
 	
 init_class:
-	TOK_ID TOK_EQUAL TOK_INIT TOK_LPAREN (expressions neuro_initEval (TOK_COMMA)?)* neuro_createConstructor TOK_RPAREN TOK_SEMICOLON;
-	
+	TOK_ID TOK_EQUAL TOK_INIT TOK_ID TOK_LPAREN (expressions neuro_initEval (TOK_COMMA)?)* neuro_createConstructor TOK_RPAREN TOK_SEMICOLON;
+
 neuro_initEval:
 ;
 
@@ -267,10 +267,16 @@ neuro_createConstructor:
 ;
 
 evaluate_class:
-	TOK_ID TOK_DOT TOK_ID(TOK_LPAREN expressions TOK_RPAREN)?;
+	TOK_ID TOK_DOT TOK_ID;
+
+neuro_prueba:
+;
 
 evaluate_function:
-	TOK_ID TOK_LPAREN (expressions (TOK_COMMA)?)* neuro_params TOK_RPAREN;
+	evaluate_function_aux neuro_params;
+
+evaluate_function_aux:
+	TOK_ID TOK_LPAREN (expressions (TOK_COMMA expressions)*)? TOK_RPAREN;
 
 neuro_params:
 ;

@@ -665,12 +665,30 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by one_for_allParser#neuro_prueba.
+    def enterNeuro_prueba(self, ctx:one_for_allParser.Neuro_pruebaContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#neuro_prueba.
+    def exitNeuro_prueba(self, ctx:one_for_allParser.Neuro_pruebaContext):
+        pass
+
+
     # Enter a parse tree produced by one_for_allParser#evaluate_function.
     def enterEvaluate_function(self, ctx:one_for_allParser.Evaluate_functionContext):
         pass
 
     # Exit a parse tree produced by one_for_allParser#evaluate_function.
     def exitEvaluate_function(self, ctx:one_for_allParser.Evaluate_functionContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#evaluate_function_aux.
+    def enterEvaluate_function_aux(self, ctx:one_for_allParser.Evaluate_function_auxContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#evaluate_function_aux.
+    def exitEvaluate_function_aux(self, ctx:one_for_allParser.Evaluate_function_auxContext):
         pass
 
 
