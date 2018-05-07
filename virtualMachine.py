@@ -130,7 +130,6 @@ class virtualMachine():
 
 	def parseConstant(self, constantString, resultAddress=None):
 
-		
 		if constantString[0] == "\"":
 			# Then is a string
 			parsedValue = constantString
@@ -198,24 +197,27 @@ class virtualMachine():
 	def saveResultAt(self, result, address, offSet=-1):	
 			# Then its an address, we need to search for it in the proper variable table
 			address = address.replace("&", "")
-			context = self.currentScope.adManager.getMemorySegment(address)[0]
-	
+			
+			memorySegment = self.currentScope.adManager.getMemorySegment(address)
+
+			context = memorySegment[0]
+			name_type = memorySegment[1]
+
 			if context == "global":
-				print("ESTE PEDO ES GLOBAL", result, address, context)
 				if self.currentScope.isArrayGlobal(address):
 					# Retrieve array number
 					offSet = self.offSetStack.pop()
 				# Save the result in global memory
-				self.currentScope.saveResultGlobal(result, address, offSet)
+				self.currentScope.saveResultGlobal(result, address, name_type, offSet)
 			elif context == "local":
 				if self.currentScope.isArrayLocal(address):
 					# Retrieve array number
 					offSet = self.offSetStack.pop()
 				# Save the result in global memory
-				self.currentScope.saveResultLocal(result, address, offSet)
+				self.currentScope.saveResultLocal(result, address, name_type, offSet)
 			elif context == "temporal":
 				# Save the result in temporal memory
-				self.currentScope.saveResultTemporal(result, address)
+				self.currentScope.saveResultTemporal(result, address, name_type)
 
 
 	def executeInstructions(self):
@@ -408,25 +410,79 @@ class virtualMachine():
 				# Create new context for this class and save it in dictionary
 				nameOfClass = str(resultAddress)
 				newClassContext = scopeManager(nameOfClass, self.currentScope.globalMemory)
-				self.registeredClasses[nameOfClass] = newClassContext
+				
+				# Insert current class in contextStack
+				self.contextStack.append(self.currentScope)
 
-				# Insert current class in current class context
-				self.contextStack.append(newClassContext)
-
-				print("METIENDO A STACK", nameOfClass)
-
+				# Replace current class
+				self.currentScope = newClassContext
 			elif operator == "END_CLASS":
 				# Pop class from contextStack
 				updatedContext = self.contextStack.pop()
 				updatedContext.globalMemory = self.currentScope.globalMemory
-				
-				nameOfClass = updatedContext.scopeName
+
+				# Replace current scope
+				self.currentScope = updatedContext
+			elif operator == "CREATE_OBJ":
+				# Create new context for such object
+
+				nameOfObject = rightOpd
+				newObjectContext = scopeManager(nameOfObject, self.currentScope.globalMemory)
+
+				# Save a value in object memory representing such object
+				self.saveResultAt(nameOfObject, resultAddress)
+
+				# Insert current object in current class context
+				self.registeredClasses[nameOfObject] = newObjectContext
+				self.contextStack.append(self.currentScope)
+
+				# Replace current class
+				self.currentScope = newObjectContext
+
+			elif operator == "END_OBJ":
+				# Pop class from contextStack
+				updatedContext = self.contextStack.pop()
+				updatedContext.globalMemory = self.currentScope.globalMemory
+
 				# Update on registeredClasses
-				self.registeredClasses[nameOfClass] = updatedContext
+				nameOfClass = self.currentScope.scopeName
+				self.registeredClasses[nameOfClass] = copy.copy(self.currentScope)
 
-				print("SACANDO DE STACK", nameOfClass)
+				# Replace current scope
+				self.currentScope = updatedContext
 
-			
+
+			elif operator == "ATTR":
+
+				# Save the value of the object in the current context which is of the
+				# class currently being intiliazed
+				leftValue = self.getValueAt(leftOpd, resultAddress)
+				self.saveResultAt(leftValue, resultAddress)
+				
+			elif operator == "ACCESS_OBJ":
+
+				# First, retrieve name of the object being referred
+				nameOfObject = self.getValueAt(leftOpd)
+				# Then, retrive such context from registeredClasses and change contexts
+				classContext = self.registeredClasses[nameOfObject]
+				classContext.globalMemory = self.currentScope.globalMemory
+				self.contextStack.append(self.currentScope)
+				self.currentScope = classContext
+
+				# Once context has been changed, retrive value
+				valueOfAttribute = self.getValueAt(rightOpd)
+
+				# Go back to previous context again
+				updatedContext = self.contextStack.pop()
+				updatedContext.globalMemory = self.currentScope.globalMemory
+				nameOfObject = self.currentScope.scopeName
+				self.registeredClasses[nameOfObject] = copy.copy(self.currentScope)
+
+				# Replace current scope
+				self.currentScope = updatedContext
+				# Save value retrieved from class context
+				self.saveResultAt(valueOfAttribute, resultAddress)
+
 			#------------------------------------------------------
 			# 	INCREASE POINTER TO NEXT QUADRUPLES
 			#------------------------------------------------------
@@ -434,6 +490,7 @@ class virtualMachine():
 			self.counterQuad += 1
 
 	def printMemory(self):
+		print("=====SCOPE=====", self.currentScope.scopeName)
 		print("GLOBAL MEMORY")
 		self.currentScope.globalMemory.printDirectory()
 		print("LOCAL MEMORY")

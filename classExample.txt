@@ -1,5 +1,14 @@
 program classExample;
 
+class prueba {
+	public var int nombre;
+	public var string p;
+
+    init(var int nombre, var string p){
+
+    }
+}
+
 class salute {
 	public var string pluma, lapiz, labial;
 	public var int nombre, stereo; 
@@ -29,8 +38,8 @@ var string drama;
 
 main {
 	var string python = "hello";
-	var int dos;
-	var int hello = 2, hi = 4, bye = 5;
+	var int dos = 999;
+	var int hello = 33, hi = 4, bye = 5;
 	var int dyr[2]; 
 	j = (1 * (2 + 4) * 6 + 10) > 50;
 	if(3*2>2) {
@@ -43,8 +52,8 @@ main {
 	} else {
 		barbara = 3 * 4;
 	}
-	var hola obj;
-	obj = init hola(2,3);
-	dos = obj.yoyo;
-	write(dos);
+	var prueba obj;
+	obj = init prueba(10,"hola");
+	dos = obj.nombre
+	write(obj.nombre);
 }

@@ -130,6 +130,7 @@ class ruleManager(one_for_allListener):
 		self.currentObj = None
 		self.initStack = []
 		self.initEvalStack = []
+		self.inheritance = None
 	
 		#Global variable to identify objects
 		self.isObject = False
@@ -171,7 +172,11 @@ class ruleManager(one_for_allListener):
 		self.createEmptyClass(className)
 
 		# Generate quadruple to indicate begin of class
-		self.generatesQuadruple("BEGIN_CLASS", None, None, className)
+		self.generateClassQuadruples("BEGIN_CLASS", None, None, className)
+
+	def exitClass_definition(self,ctx):
+		self.inheritance = False
+		self.currentClass.printClass()
 
 	def enterClass_public(self, ctx):
 		try:
@@ -221,6 +226,7 @@ class ruleManager(one_for_allListener):
 					for var in currentVariables:
 						#Create variable object
 						newVariable = self.createAddVariable(var.getText(), currentType, dim, size)
+
 				else:
 					for var in currentVariables:
 						newVariable = self.createAddVariable(var.getText(), currentType, dim, size)
@@ -311,9 +317,6 @@ class ruleManager(one_for_allListener):
 		# Change context to global
 		self.currentScope = ("global",None)
 
-	def enterNeuro_array(self, ctx):
-		pass
-
 	def exitClass_definition(self, ctx):
 		# Call method to add finished class to the class directory
 		self.addFinishedClass(self.currentClass)
@@ -324,7 +327,7 @@ class ruleManager(one_for_allListener):
 
 		# Generate quadruple to indicate end of class
 		className = ctx.TOK_ID().getText()
-		self.generatesQuadruple("END_CLASS", None, None, className)
+		self.generateClassQuadruples("END_CLASS", None, None, className)
 
 	def exitClasses(self, ctx):
 		# Reset part of class boolean
@@ -595,7 +598,7 @@ class ruleManager(one_for_allListener):
 			formattedFunction = [retrievedFunction.name, retrievedFunction.data_type]
 
 			self.funcStack.append(formattedFunction)
-		elif operator in ["GOSUB", "RETURN_ASSIGN", "WRITE", "BEGIN_MAIN", "BEGIN_CLASS", "END_CLASS"]:
+		elif operator in ["GOSUB", "RETURN_ASSIGN", "WRITE", "BEGIN_MAIN"]:
 			resultQuadruple = quadruples(self.counter, operator, None, None,result)
 			self.counter += 1
 			self.quadruplesList.append(resultQuadruple)
@@ -640,8 +643,8 @@ class ruleManager(one_for_allListener):
 			self.counter += 1
 			self.quadruplesList.append(resultCuadruple)
 
-		elif operator == "CREATE_OBJ":		
-			resultCuadruple = quadruples(self.counter, operator, None, None, '&'+str(result))		
+		elif operator in ["CREATE_OBJ", "END_OBJ"]:		
+			resultCuadruple = quadruples(self.counter, operator, left, right, '&'+str(result))		
 			self.counter += 1		
 			self.quadruplesList.append(resultCuadruple)		
 		elif operator == "ATTR":		
@@ -656,13 +659,23 @@ class ruleManager(one_for_allListener):
 				self.error.definition(self.error.INVALID_OPERATION, left_type, right_type)		
 		elif operator == "ACCESS_OBJ":		
 			#Get the type of the address		
-			type = right[0]		
-			#Create temporal variable of the same data type of the attribute		
+			type = right[0]
+			idOfAttribute = right[1]
+
+			
+			#Create temporal variable of the same data type of the attribute
+
+			# Search for that variable
+
 			temp = self.addressManager.getVirtualAddress(type,'temporal')		
 			self.opdStack.append(('&'+str(temp), type))		
 		
-			resultQuadruple = quadruples(self.counter,operator, '&'+str(left), '&'+str(right[1]), '&'+str(temp))		
+			resultQuadruple = quadruples(self.counter,operator, '&'+str(left), '&'+str(idOfAttribute), '&'+str(temp))		
 			self.counter += 1		
+			self.quadruplesList.append(resultQuadruple)
+		elif operator in ["BEGIN_CLASS", "END_CLASS"]:
+			resultQuadruple = quadruples(self.counter, operator, None, None, result)
+			self.counter += 1
 			self.quadruplesList.append(resultQuadruple)
 
 	#Method that retrieves an specific quadruple and modifies its value
@@ -887,19 +900,24 @@ class ruleManager(one_for_allListener):
 
 	def enterInit_class(self, ctx):
 		#Get the name of the id
-		
-		name = ctx.TOK_ID(1).getText()
+		nameOfObject = ctx.TOK_ID(0).getText()
+		nameOfClass = ctx.TOK_ID(1).getText()
 		
 		#Get the object 
-		self.currentObj = self.objects.getObjectByClassName(name)
+		self.currentObj = self.objects.getObjectByClassName(nameOfClass)
 		#Get the address of the object
 		address = self.currentObj.id
 
 		#Create quaruples for creating objects
-		self.generateClassQuadruples("CREATE_OBJ", None, None, address)
+		self.generateClassQuadruples("CREATE_OBJ", nameOfClass, nameOfObject, address)
 	
 	def exitInit_class(self, ctx):
-		pass
+		#Get the address of the object
+		name = self.currentObj.name
+		address = self.currentObj.id
+
+		#Create quaruples for indicating end of class init
+		self.generateClassQuadruples("END_OBJ", name, None, address)
 
 	def enterNeuro_initEval(self, ctx):
 		self.initEvalStack.append(self.opdStack.pop())
@@ -925,8 +943,12 @@ class ruleManager(one_for_allListener):
 	#	INHERITANCE
 	#---------------------------------------------
 	def enterInheritance(self, ctx):
+		self.inheritance = True
 		className = ctx.TOK_ID().getText()
 		self.currentClass.parent = className
+		parent_class = self.classDirectory.getClassByName(self.currentClass.parent)
+		copy_attr = parent_class.variableClassDirectory.copy()
+		self.currentClass.variableClassDirectory.update(copy_attr)
 
 	#-------------------------------------------
 	#	EVALUATE CLASS
@@ -940,11 +962,13 @@ class ruleManager(one_for_allListener):
 			#Check if it exists in the table of objects
 			if self.objects.checkObjectByName(id):
 				obj = self.objects.getObjectByName(id)
+
 				for key, val in obj.objAttr.items():
 					if id2 == val.name: 
 						#Check attribute type
 						type = val.data_type
 						val = [type, val.id]
+
 						#Generate quadruple
 						self.generateClassQuadruples("ACCESS_OBJ", obj.id, val, None)
 			else:
@@ -1012,16 +1036,25 @@ class ruleManager(one_for_allListener):
 		if self.isPartOfClass:
 			# Set current privacy of the group of variables
 			currentPrivacy = "public" if self.isPublic else "private"
-
 			# If this is part of a class, then create an classVariable object 
 			newClassVariable = classVariable(self.addressManager.getVirtualAddress(data_type, self.currentScope[0]), name, data_type, currentPrivacy)
+			address = self.addressManager.getVirtualAddress(data_type, self.currentScope[0])
 			#Create a dict entry
 			var = {self.addressManager.getVirtualAddress(data_type, self.currentScope[0]) : newClassVariable}
 			#Update the address 
 			self.addressManager.updateVirtualAddress(data_type, self.currentScope[0])
-			#Save the variable in the current class directory
-			self.currentClass.variableClassDirectory.update(var)
-
+			#Check if there are inherited variables
+			if not self.inheritance:
+				#Save the variable in the current class directory
+				self.currentClass.variableClassDirectory.update(var)
+			else:
+				#Iterate dictionary 
+				for key,value in self.currentClass.variableClassDirectory.items():
+					if key == list(var.keys())[0]:
+						new_key = key + 1
+						var[new_key] = var.pop(key)
+						var[new_key].id = new_key
+				self.currentClass.variableClassDirectory.update(var)
 		else:
 			# Else, this variable is not associated with a class and we need to create a objVariable object
 			# and add it directly to the global variables directory
