@@ -32,7 +32,6 @@ class semanticCube():
 		self.dicOperators['||'] = 12
 
 
-
 		# Initialize cube
 		self.cube = self.createCube(-1, *(5, 5, 13))
 		self.cubeDeclaration()

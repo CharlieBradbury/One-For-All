@@ -839,6 +839,10 @@ class ruleManager(one_for_allListener):
 				print("The number of parameters does not match the function")
 				sys.exit()
 
+
+	#-------------------------------------------	
+
+
 	def enterNeuro_params(self, ctx):
 		#Send every parameter
 		try:

@@ -1,5 +1,10 @@
 program classExample;
 
+var bool j;
+var int barbara;
+var int drink[3];
+var string drama; 
+
 class prueba {
 	public var int nombre;
 	public var string p;
@@ -13,7 +18,7 @@ class salute {
 	public var string pluma, lapiz, labial;
 	public var int nombre, stereo; 
 	public function string sayHello(var string hola, var string addios, var int fellow) {
-			write("hello");
+			return "sayHello";
 		}
     init(var int cant1, var int cant2){
 
@@ -23,18 +28,14 @@ class salute {
 class hola : salute {
 	public var string hello, yellow, lala;
 	public var int yoyo, hallo; 
-	public function string sayHello(var string hola, var string addios, var int fellow) {
-			write("hello");
-		}
+	public function string sayBye(var string hola, var string addios, var int fellow) {
+		return "sayBye";
+	}
+
     init(var int cant1, var int cant2){
 
     }
 }
-
-var bool j;
-var int barbara;
-var int drink[3];
-var string drama; 
 
 main {
 	var string python = "hello";

@@ -647,6 +647,24 @@ class one_for_allListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by one_for_allParser#evaluate_method.
+    def enterEvaluate_method(self, ctx:one_for_allParser.Evaluate_methodContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#evaluate_method.
+    def exitEvaluate_method(self, ctx:one_for_allParser.Evaluate_methodContext):
+        pass
+
+
+    # Enter a parse tree produced by one_for_allParser#evaluate_method_aux.
+    def enterEvaluate_method_aux(self, ctx:one_for_allParser.Evaluate_method_auxContext):
+        pass
+
+    # Exit a parse tree produced by one_for_allParser#evaluate_method_aux.
+    def exitEvaluate_method_aux(self, ctx:one_for_allParser.Evaluate_method_auxContext):
+        pass
+
+
     # Enter a parse tree produced by one_for_allParser#evaluate_function.
     def enterEvaluate_function(self, ctx:one_for_allParser.Evaluate_functionContext):
         pass
