@@ -47,6 +47,8 @@ class virtualMachine():
 		# List of classes, which saves scopes for classes
 		self.registeredClasses = dict()
 
+		self.callingClass = False
+
 		#------------------------------------------------------
 		# 	NAME OF FILE TO READ
 		#------------------------------------------------------
@@ -370,7 +372,16 @@ class virtualMachine():
 				previousScope = self.contextStack.pop()
 				previousScope.globalMemory = self.currentScope.globalMemory
 
+
+				# Is calling a class, before getting rid of context, save it
+				if self.callingClass:
+					nameOfObject = self.currentScope.scopeName
+					self.registeredClasses[nameOfObject] = copy.copy(self.currentScope)
+					self.callingClass = False
+
+
 				self.currentScope = previousScope
+				
 
 				# After changing context, we assign the result
 				self.saveResultAt(resultOfFunction, whereToSaveResult)
@@ -378,9 +389,22 @@ class virtualMachine():
 				# Then, we can move the pointer back to where we were
 				previousPointer = self.jumpReturnStack.pop()
 				self.counterQuad = previousPointer
-			elif operator == "MAIN":
+			elif operator == "BEGIN_MAIN":
+				self.contextStack.append(self.currentScope)
 				mainContext = scopeManager("main", self.currentScope.globalMemory)
-				self.contextStack.append(mainContext)
+				self.currentScope = mainContext
+				
+			elif operator == "CLASS_ERA":
+
+				# First, retrieve name of the object being referred
+				nameOfObject = self.getValueAt(rightOpd)
+				# Then, retrive such context from registeredClasses and change contexts
+				classContext = self.registeredClasses[nameOfObject]
+				classContext.globalMemory = self.currentScope.globalMemory
+				self.contextStack.append(self.currentScope)
+				self.currentScope = classContext
+				
+				self.callingClass = True
 
 			#------------------------------------------------------
 			# 	ARRAY OPERATORS

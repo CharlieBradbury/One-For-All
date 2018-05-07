@@ -9,6 +9,11 @@ class prueba {
 	public var int nombre;
 	public var string p;
 
+	public function int regresa(var int uno)
+	{
+		return 555;
+	}
+	
     init(var int nombre, var string p){
 
     }
@@ -55,6 +60,6 @@ main {
 	}
 	var prueba obj;
 	obj = init prueba(10,"hola");
-	dos = obj.nombre
-	write(obj.nombre);
+	dos = obj.regresa(obj.uno);
+	write(dos);
 }

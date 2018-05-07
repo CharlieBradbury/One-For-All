@@ -336,7 +336,7 @@ class ruleManager(one_for_allListener):
 
 	def exitRestOfProgram(self, ctx):
 		self.generatesQuadruple('END',None, None, None)
-		#self.printQuadruples()
+		self.printQuadruples()
 		'''
 		print("------GLOBAL VARIABLES-----")
 		for key, var in self.varDirectory.directory.items():
@@ -638,8 +638,8 @@ class ruleManager(one_for_allListener):
 	#		QUADRUPLES FOR CLASSES
 	#----------------------------------------------------------------------------------------
 	def generateClassQuadruples(self, operator, left, right, result):
-		if operator == "ERA":
-			resultCuadruple = quadruples(self.counter, operator, None, right,result)
+		if operator == "CLASS_ERA":
+			resultCuadruple = quadruples(self.counter, operator, None, '&'+str(right), result)
 			self.counter += 1
 			self.quadruplesList.append(resultCuadruple)
 
@@ -809,6 +809,38 @@ class ruleManager(one_for_allListener):
 			self.fillQuadruple(endJump, self.counter)
 		except:
 			pass
+
+	# AQUIIIII
+	def exitEvaluate_method_aux(self, ctx):
+		nameOfObject = ctx.TOK_ID(0).getText()
+		nameOfMethod = ctx.TOK_ID(1).getText()
+
+		number = ctx.expressions()
+
+		objInfo = self.objects.getObjectByName(nameOfObject)
+		nameClass = objInfo.type
+
+		#Check if the function exists in the function directory of the respective class
+		classObj = self.classDirectory.getClassByName(nameClass)
+
+		for key, val in classObj.methodsClassDirectory.items():
+			if val.name == nameOfMethod:
+				method = val
+				copyParamStack = []
+				for param in method.params:
+					print(method.params)
+					copyParamStack.append(param)
+				self.parameterStack = copyParamStack
+				if len(self.parameterStack) == len(number) or (len(self.parameterStack) == 0 and number == ''):
+					self.FunctionId = method.id
+					self.returnType = method.data_type
+					self.generateClassQuadruples("CLASS_ERA", None, objInfo.id, val.name)
+					# Search for that function in directory and push it to stack
+					formattedFunction = [method.name, method.data_type]
+					self.funcStack.append(formattedFunction)
+				else:
+					print("The number of parameters does not match the function")
+					sys.exit()
 
 	# CODE ACTIONS FOR MODULE CALL
 	def exitEvaluate_function_aux(self, ctx):

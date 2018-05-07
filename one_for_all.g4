@@ -51,7 +51,7 @@ TOK_ID : [a-zA-Z0-9]+;
 ESPACIOS : [ \n\t\r] -> skip;
 
 programa: 
-	TOK_PROGRAM TOK_ID TOK_SEMICOLON ? (variables)? neuro_jump_main (classes) (routines)? restOfProgram;
+	TOK_PROGRAM TOK_ID TOK_SEMICOLON ? (variables)? neuro_jump_main (classes)? (routines)? restOfProgram;
 
 neuro_jump_main:
 ;
@@ -249,7 +249,7 @@ id_:
 	id_definition_;
 
 id_definition_:
-	evaluate_function | evaluate_method | evaluate_class | evaluate_array | TOK_ID;
+	evaluate_method | evaluate_function | evaluate_class | evaluate_array | TOK_ID;
 	
 init_class:
 	TOK_ID TOK_EQUAL TOK_INIT TOK_ID TOK_LPAREN (expressions neuro_initEval (TOK_COMMA)?)* neuro_createConstructor TOK_RPAREN TOK_SEMICOLON;
